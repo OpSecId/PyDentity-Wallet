@@ -126,7 +126,8 @@ class WebAuthnProvider:
         )
         
         # After a successful authentication, expire the challenge so it can't be used again.
-        Config.AUTHENTICATION_CHALLENGES.expire(client_id, datetime.timedelta(seconds=1))
+        if Config.SESSION_TYPE == 'redis':
+            Config.AUTHENTICATION_CHALLENGES.expire(client_id, datetime.timedelta(seconds=1))
 
         
         # Update the credential sign count after using, then save it back to the database.
