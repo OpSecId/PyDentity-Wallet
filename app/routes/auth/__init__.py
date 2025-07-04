@@ -15,7 +15,7 @@ webauthn = WebAuthnProvider()
 
 @bp.before_request
 def before_request_callback():
-    if not session.get('wallet_id'):
+    if not session.get('client_id'):
         session.clear()
         session["endpoint"] = Config.APP_URL
         session["development"] = Config.TESTING
