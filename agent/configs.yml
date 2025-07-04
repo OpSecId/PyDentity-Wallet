@@ -11,7 +11,7 @@ auto-provision: true
 recreate-wallet: false
 
 wallet-type: askar-anoncreds
-wallet-storage-type: postgres_storage
+# wallet-storage-type: postgres_storage
 
 multitenant: true
 multitenant-admin: true
