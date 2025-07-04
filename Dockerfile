@@ -14,4 +14,4 @@ RUN poetry install
 COPY app ./app
 COPY config.py main.py ./
 
-CMD ["gunicorn", "start:app"]
+CMD ["gunicorn", "main:app"]
