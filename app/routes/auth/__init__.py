@@ -75,6 +75,7 @@ def login():
     if request.method == 'GET':
         current_app.logger.warning(f'Prepare login: {client_id}')
         auth_options = await_(webauthn.prepare_login_with_credential(client_id))
+        current_app.logger.warning('Login Credential Ready')
         return jsonify(auth_options), 200
 
     elif request.method == 'POST':
@@ -86,6 +87,7 @@ def login():
         attestation = json.loads(request.get_data())
         try:
             await_(webauthn.verify_authentication_credential(client_id, attestation))
+            current_app.logger.warning('Authentication Credential Verified')
             wallet['token'] = agent.request_token(
                 wallet.get('wallet_id'),
                 wallet.get('wallet_key'),

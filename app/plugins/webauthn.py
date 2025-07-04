@@ -87,8 +87,8 @@ class WebAuthnProvider:
             allow_credentials=allowed_credentials,
         )
 
-        AUTHENTICATION_CHALLENGES.set(client_id, authentication_options.challenge)
-        AUTHENTICATION_CHALLENGES.expire(client_id, datetime.timedelta(minutes=self.challenge_exp))
+        Config.AUTHENTICATION_CHALLENGES.set(client_id, authentication_options.challenge)
+        Config.AUTHENTICATION_CHALLENGES.expire(client_id, datetime.timedelta(minutes=self.challenge_exp))
 
         return json.loads(webauthn.options_to_json(authentication_options))
 
