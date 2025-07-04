@@ -23,26 +23,32 @@ def index():
 @bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == 'GET':
-        session['client_id'] = str(uuid.uuid4())
+        client_id = session['client_id'] = str(uuid.uuid4())
+        current_app.logger.warning(f'New Registration Request: {client_id}')
         registration_credential = await_(webauthn.prepare_credential_creation(session['client_id'], 'PyDentity'))
+        current_app.logger.warning('Registration Credential Prepared')
         return jsonify(registration_credential), 200
 
     elif request.method == 'POST':
         client_id = session.get("client_id")
+        current_app.logger.warning(f'Checking Registration Request: {client_id}')
         if not client_id:
             abort("Error user not found", 400)
 
         registration_credential = await_(webauthn.create_registration_credential(json.loads(request.get_data())))
+        current_app.logger.warning('Registration Credential Created')
         try:
             await_(webauthn.verify_and_save_credential(
                 client_id, 
                 registration_credential
             ))
+            current_app.logger.warning('Registration Credential Verified')
             
             wallet = await_(provision_wallet(client_id))
-        
+            wallet_id = session['wallet_id'] = wallet.get('wallet_id')
+            current_app.logger.warning(f'Wallet Provisioned: {wallet_id}')
+            
             session['token'] = wallet.get('token')
-            session['wallet_id'] = wallet.get('wallet_id')
             
             return jsonify(
                 {
@@ -51,6 +57,7 @@ def register():
                 }), 201
         
         except InvalidRegistrationResponse:
+            current_app.logger.warning('Registration Credential Verification Failed')
             abort(jsonify({"verified": False}), 400)
     return redirect(url_for('auth.logout'))
 
