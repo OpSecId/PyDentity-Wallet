@@ -13,11 +13,15 @@ askar = AskarStorage()
 webauthn = WebAuthnProvider()
 
 
+@bp.before_request
+def before_request_callback():
+    if not session.get('wallet_id'):
+        session.clear()
+        session["endpoint"] = Config.APP_URL
+        session["development"] = Config.TESTING
+
 @bp.route("/")
 def index():
-    session.clear()
-    session["endpoint"] = Config.APP_URL
-    session["development"] = Config.TESTING
     return render_template("pages/auth.jinja", title=Config.APP_NAME)
 
 @bp.route("/register", methods=["GET", "POST"])
