@@ -88,7 +88,8 @@ class WebAuthnProvider:
         )
 
         Config.AUTHENTICATION_CHALLENGES.set(client_id, authentication_options.challenge)
-        Config.AUTHENTICATION_CHALLENGES.expire(client_id, datetime.timedelta(minutes=self.challenge_exp))
+        if Config.SESSION_TYPE == 'redis':
+            Config.AUTHENTICATION_CHALLENGES.expire(client_id, datetime.timedelta(minutes=self.challenge_exp))
 
         return json.loads(webauthn.options_to_json(authentication_options))
 
