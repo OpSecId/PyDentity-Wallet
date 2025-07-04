@@ -12,16 +12,11 @@ agent = AgentController()
 askar = AskarStorage()
 webauthn = WebAuthnProvider()
 
-
-@bp.before_request
-def before_request_callback():
-    if not session.get('client_id'):
-        session.clear()
-        session["endpoint"] = Config.APP_URL
-        session["development"] = Config.TESTING
-
 @bp.route("/")
 def index():
+    session.clear()
+    session["endpoint"] = Config.APP_URL
+    session["development"] = Config.TESTING
     return render_template("pages/auth.jinja", title=Config.APP_NAME)
 
 @bp.route("/register", methods=["GET", "POST"])
@@ -75,6 +70,8 @@ def login():
     if request.method == 'GET':
         current_app.logger.warning(f'Prepare login: {client_id}')
         auth_options = await_(webauthn.prepare_login_with_credential(client_id))
+        if not auth_options:
+            return {}, 404
         current_app.logger.warning('Login Credential Ready')
         return jsonify(auth_options), 200
 
@@ -95,6 +92,7 @@ def login():
             await_(askar.update('wallet', client_id, wallet))
             
             session['client_id'] = client_id
+            session["wallet_id"] = wallet["wallet_id"]
             session['token'] = wallet['token']
             
             return jsonify({"verified": True}), 200

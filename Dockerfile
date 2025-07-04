@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.12.11-slim-bookworm
 
 WORKDIR /pydentity
 
@@ -14,4 +14,4 @@ RUN poetry install
 COPY app ./app
 COPY config.py main.py ./
 
-CMD [ "python", "main.py" ]
+CMD ["gunicorn", "start:app"]

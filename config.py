@@ -19,6 +19,7 @@ class Config(object):
     PROJECT_URL = "https://github.com/openwallet-foundation-labs/PyDentity-Wallet"
 
     SECRET_KEY = os.getenv("PYDENTITY_WALLET_SECRET_KEY", "unsecured")
+    STORE_KEY = os.getenv("PYDENTITY_WALLET_STORE_KEY", "unsecured")
 
     # Create local storage if no postgres instance available
     ASKAR_DB = os.getenv("ASKAR_DB", "sqlite://app.db")
