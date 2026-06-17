@@ -193,11 +193,17 @@ class QRScanner:
         if exchange.get("verifiablePresentationRequest"):
             _log("Exchange returned verifiablePresentationRequest — building presentation")
             _log_json("VPR", exchange.get("verifiablePresentationRequest"))
-            await vcapi.present_credential(
+            follow_up = await vcapi.present_credential(
                 exchange.get("verifiablePresentationRequest")
             )
-            result = {**result, "status": "presented", "exchange": exchange}
-            _log_json("IUV handler finished (presented)", {**result, "exchange": "(omitted)"})
+            result = {**result, "status": "presented"}
+            if isinstance(follow_up, dict) and follow_up.get("redirectUrl"):
+                result = {
+                    **result,
+                    "status": "redirect",
+                    "redirectUrl": follow_up.get("redirectUrl"),
+                }
+            _log_json("IUV handler finished (presented)", result)
             return result
 
         if exchange.get("redirectUrl"):

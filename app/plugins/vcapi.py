@@ -102,6 +102,7 @@ class VcApiExchanger:
         ):
             if query.get("type") == "DIDAuthentication":
                 _log("VPR query: DIDAuthentication")
+                reason = reason or "Signed in with DID Authentication"
                 methods = [
                     method.get("method")
                     for method in as_list(
@@ -198,14 +199,23 @@ class VcApiExchanger:
 
         _log(f"Presentation submit: HTTP {r.status_code}")
 
+        exchange_response = {}
+        try:
+            exchange_response = r.json()
+            if isinstance(exchange_response, dict):
+                _log(f"Exchange follow-up keys: {list(exchange_response.keys())}")
+        except ValueError:
+            pass
+
         # We store an event notification of the presentation exchange
         notification = Notification(
             id=str(uuid.uuid4()),
             type="vcapi_exchange",
             title="Presentation Sent",
-            origin=vpr.get("domain"),
-            message=reason,
+            origin=vpr.get("domain") or self.exchange_url,
+            message=reason or "Presentation sent",
             timestamp=str(datetime.now().isoformat()),
         ).model_dump()
         await self.askar.append("notifications", notification)
         _log("Presentation exchange notification stored")
+        return exchange_response
