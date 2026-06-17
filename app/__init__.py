@@ -12,6 +12,7 @@ from asyncio import run as asyncio_run
 
 from config import Config
 from app.plugins import initialize_askar_storage
+from app.utils import is_mobile
 from app.handlers.errors import bp as errors_bp
 from app.routes.main import bp as main_bp
 from app.routes.auth import bp as auth_bp
@@ -57,6 +58,18 @@ def create_app(config_class=Config):
 
     @app.route("/install")
     def install():
+        from flask import session
+
+        session["endpoint"] = Config.APP_URL
+        session["app_icon"] = Config.APP_ICON
+        session["app_logo"] = Config.APP_LOGO
+
+        if is_mobile():
+            return render_template(
+                "pages/install-mobile.jinja",
+                title=Config.APP_NAME,
+            )
+
         # Use ngrok URL if available, otherwise use configured APP_URL
         app_url = app.config.get('NGROK_URL') or Config.APP_URL
         return render_template(

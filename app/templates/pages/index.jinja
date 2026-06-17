@@ -30,6 +30,19 @@
             transition: opacity 0.2s ease-in;
         }
     }
+
+    .credential-card-dates {
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        line-height: 1.2;
+        min-height: calc(1.2em * 2);
+    }
+
+    .credential-card-date {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 </style>
 
 <div class="page-body">
@@ -155,6 +168,8 @@
                                 {% set issuer_image = issuer.get('image', '') %}
                                 {% set issuer_name = issuer.get('name', 'Unknown') %}
                                 {% set issuer_id = issuer.get('id', '') %}
+                                {% set issued_date = credential['validFrom'].split('T')[0] if credential.get('validFrom') else (credential['issuanceDate'].split('T')[0] if credential.get('issuanceDate') else '') %}
+                                {% set expires_date = credential['validUntil'].split('T')[0] if credential.get('validUntil') else (credential['expirationDate'].split('T')[0] if credential.get('expirationDate') else '') %}
                                 
                                 <div class="col-auto">
                                     {% if issuer_image %}
@@ -171,15 +186,9 @@
                                     <div class="text-secondary text-truncate">
                                         {{ issuer_name }}
                                     </div>
-                                    <div class="small text-muted">
-                                        {% if credential.get('validFrom') %} 
-                                        Issued: {{ credential['validFrom'].split('T')[0] }}
-                                        {% elif credential.get('issuanceDate') %} 
-                                        Issued: {{ credential['issuanceDate'].split('T')[0] }}
-                                        {% endif %}
-                                        {% if credential.get('validUntil') or credential.get('expirationDate') %}
-                                        • Expires: {{ credential['validUntil'].split('T')[0] if credential.get('validUntil') else credential['expirationDate'].split('T')[0] }}
-                                        {% endif %}
+                                    <div class="small text-muted credential-card-dates">
+                                        <div class="credential-card-date">Issued: {{ issued_date or '—' }}</div>
+                                        <div class="credential-card-date">Expires: {{ expires_date or '—' }}</div>
                                     </div>
                                 </div>
                                 <div class="col-auto">
@@ -525,8 +534,8 @@
             const issuerB = b.querySelector('.text-secondary').textContent.trim();
             
             // Get dates from the "Issued" text
-            const dateTextA = a.querySelector('.small.text-muted')?.textContent || '';
-            const dateTextB = b.querySelector('.small.text-muted')?.textContent || '';
+            const dateTextA = a.querySelector('.credential-card-dates')?.textContent || '';
+            const dateTextB = b.querySelector('.credential-card-dates')?.textContent || '';
             
             switch(sortBy) {
                 case 'newest':

@@ -1,0 +1,92 @@
+{% extends('layouts/base.min.jinja') %}
+{% block page %}
+<div class="container container-tight py-4">
+    <div class="text-center mb-4">
+        <a href="{{ url_for('auth.index') }}" class="navbar-brand navbar-brand-autodark">
+            <img width="200" src="{{ url_for('static', filename='img/pydentity-logo.png') }}" alt="PyDentity Wallet">
+        </a>
+    </div>
+
+    <div class="card card-md mb-3">
+        <div class="card-body">
+            <h2 class="text-center mb-3">Install PyDentity Wallet</h2>
+            <p class="text-muted text-center mb-4">
+                Add the wallet to your home screen for quick access and a full-screen app experience.
+            </p>
+
+            <div id="install-ios" class="mb-4" style="display: none;">
+                <h4 class="mb-3">
+                    <span class="badge bg-secondary-lt me-2">iOS</span>
+                    Safari
+                </h4>
+                <ol class="text-muted mb-0">
+                    <li class="mb-2">Tap the <strong>Share</strong> button at the bottom of Safari.</li>
+                    <li class="mb-2">Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+                    <li>Tap <strong>Add</strong>, then open the wallet from your home screen.</li>
+                </ol>
+            </div>
+
+            <div id="install-android" class="mb-4" style="display: none;">
+                <h4 class="mb-3">
+                    <span class="badge bg-success-lt me-2">Android</span>
+                    Chrome
+                </h4>
+                <ol class="text-muted mb-3">
+                    <li class="mb-2">Tap the browser menu <strong>(⋮)</strong> in the top right.</li>
+                    <li class="mb-2">Tap <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li>
+                    <li>Confirm to add PyDentity Wallet to your device.</li>
+                </ol>
+                <button type="button" class="btn btn-primary w-100" id="android-install-btn" style="display: none;">
+                    Install app
+                </button>
+            </div>
+
+            <div id="install-generic" class="text-muted text-center">
+                Use your browser menu to add this site to your home screen or install it as an app.
+            </div>
+        </div>
+    </div>
+
+    <div class="d-grid gap-2">
+        <a href="{{ url_for('auth.index') }}" class="btn btn-outline-primary">Back to welcome</a>
+        <a href="{{ url_for('auth.sign_in') }}" class="btn btn-primary">Continue to sign in</a>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const ua = navigator.userAgent || '';
+        const isIOS = /iPhone|iPad|iPod/i.test(ua);
+        const isAndroid = /Android/i.test(ua);
+
+        if (isIOS) {
+            document.getElementById('install-ios').style.display = 'block';
+            document.getElementById('install-generic').style.display = 'none';
+        } else if (isAndroid) {
+            document.getElementById('install-android').style.display = 'block';
+            document.getElementById('install-generic').style.display = 'none';
+        }
+
+        let deferredPrompt = null;
+        const installBtn = document.getElementById('android-install-btn');
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            deferredPrompt = event;
+            if (installBtn) {
+                installBtn.style.display = 'block';
+            }
+        });
+
+        if (installBtn) {
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+            });
+        }
+    })();
+</script>
+{% endblock %}

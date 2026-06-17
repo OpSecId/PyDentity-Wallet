@@ -3,38 +3,38 @@
 {% if not session.get('development') %}
 <script>
     if (!(/Mobi|Android|iPhone/i.test(navigator.userAgent))) {
-        window.location.replace("/install");
+        window.location.replace("{{ url_for('install') }}");
     }
 </script>
 {% endif %}
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="https://unpkg.com/htmx.org@1.7.0"></script>
 <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
 <script>
     const { startRegistration, startAuthentication } = SimpleWebAuthnBrowser;
+    const AUTH_MODE = {{ mode|tojson }};
 </script>
 
-<div class="container container-tight py-4" onload="accessWallet()">
+<div class="container container-tight py-4">
     <div class="text-center mb-4">
-        <a href="." class="navbar-brand navbar-brand-autodark">
+        <a href="{{ url_for('auth.index') }}" class="navbar-brand navbar-brand-autodark">
             <img width="220px" src="{{ session['app_logo'] }}">
         </a>
     </div>
-    <div id="loading-access" class="progress progress-sm" style="display: none;">
-        <div class="progress-bar progress-bar-indeterminate"></div>
-    </div>
     <div class="card-md">
         <div class="card-body text-center">
+            <h3 class="mb-3">{{ 'Sign in' if mode == 'sign-in' else 'Create wallet' }}</h3>
             <div id="auth-loading" class="progress progress-sm" hidden>
                 <div class="progress-bar progress-bar-indeterminate"></div>
             </div>
-            <p id="auth-status" class="text-muted mt-3 mb-0"></p>
-            <a id="start-auth" href="#" class="btn btn-outline-dark btn-lg" style="display: none;"></a>
+            <p id="auth-status" class="text-muted mt-3 mb-3"></p>
+            <a id="start-auth" href="#" class="btn btn-primary btn-lg" style="display: none;"></a>
+            <div id="auth-actions" class="d-grid gap-2" style="display: none;"></div>
         </div>
     </div>
+    <div class="text-center mt-3">
+        <a href="{{ url_for('auth.index') }}" class="text-muted small">Back to welcome</a>
+    </div>
 </div>
-
-
 
 <script>
     function setAuthStatus(message) {
@@ -47,7 +47,7 @@
     }
 
     function showAuthLoading() {
-        $('#auth-loading').removeAttr('hidden');
+        document.getElementById('auth-loading').removeAttribute('hidden');
     }
 
     function setupAuthButton(label, handler) {
@@ -59,7 +59,12 @@
             showAuthLoading();
             await handler();
         };
-        button.click();
+    }
+
+    function showAuthActions(html) {
+        const actions = document.getElementById('auth-actions');
+        actions.innerHTML = html;
+        actions.style.display = 'grid';
     }
 
     function beginRegistration() {
@@ -67,7 +72,7 @@
         const endpoint = '{{ url_for("auth.register") }}';
         $.get(endpoint)
             .done(function (data) {
-                setupAuthButton('Create wallet', async () => {
+                setupAuthButton('Create wallet with passkey', async () => {
                     const attResp = await startRegistration({ optionsJSON: data });
                     const verificationResp = await fetch(endpoint, {
                         method: 'POST',
@@ -80,9 +85,9 @@
                         window.location.replace("{{ url_for('main.index') }}");
                     } else {
                         setAuthStatus('Registration failed. Please try again.');
-                        alert("Failure");
                     }
                 });
+                document.getElementById('start-auth').click();
             })
             .fail(function () {
                 setAuthStatus('Could not start registration. Please refresh and try again.');
@@ -95,7 +100,7 @@
         $.get(endpoint)
             .done(function (data) {
                 setAuthStatus('Confirm with your passkey to sign in.');
-                setupAuthButton('Sign in', async () => {
+                setupAuthButton('Sign in with passkey', async () => {
                     const asseResp = await startAuthentication({ optionsJSON: data });
                     const verificationResp = await fetch(endpoint, {
                         method: 'POST',
@@ -107,31 +112,44 @@
                         window.location.replace("{{ url_for('main.index') }}");
                     } else {
                         setAuthStatus('Sign in failed. Please try again.');
-                        alert("login failed");
-                        console.error(verificationJSON);
                     }
                 });
+                document.getElementById('start-auth').click();
             })
             .fail(function (xhr) {
                 const response = xhr.responseJSON || {};
-                console.warn('Login unavailable for stored client', clientId, response);
                 clearStoredClient();
                 if (xhr.status === 404 || response.error === 'wallet_not_found') {
-                    setAuthStatus('No wallet found on this server. Creating a new wallet...');
+                    setAuthStatus('No wallet found on this server for this device.');
+                    showAuthActions(`
+                        <a href="{{ url_for('auth.create_wallet') }}" class="btn btn-primary">Create a new wallet</a>
+                        <a href="{{ url_for('auth.index') }}" class="btn btn-outline-secondary">Back to welcome</a>
+                    `);
                 } else {
-                    setAuthStatus('Could not restore your session. Creating a new wallet...');
+                    setAuthStatus('Could not restore your session. Please try again.');
+                    showAuthActions(`
+                        <a href="{{ url_for('auth.sign_in') }}" class="btn btn-outline-primary">Try again</a>
+                        <a href="{{ url_for('auth.index') }}" class="btn btn-outline-secondary">Back to welcome</a>
+                    `);
                 }
-                beginRegistration();
             });
     }
 
-    const clientId = localStorage.getItem('clientId');
-    if (clientId) {
-        beginLogin(clientId);
-    } else {
+    if (AUTH_MODE === 'create') {
+        clearStoredClient();
         beginRegistration();
+    } else {
+        const clientId = localStorage.getItem('clientId');
+        if (clientId) {
+            beginLogin(clientId);
+        } else {
+            setAuthStatus('No wallet is saved on this device yet.');
+            showAuthActions(`
+                <a href="{{ url_for('auth.create_wallet') }}" class="btn btn-primary">Create a wallet</a>
+                <a href="{{ url_for('auth.index') }}" class="btn btn-outline-secondary">Back to welcome</a>
+            `);
+        }
     }
 </script>
-
 
 {% endblock %}

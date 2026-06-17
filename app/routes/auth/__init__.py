@@ -12,6 +12,7 @@ from flask import (
 from config import Config
 from app.plugins import AgentController, AskarStorage, WebAuthnProvider, AskarStorageKeys
 from app.operations import provision_wallet
+from app.utils import is_mobile
 from webauthn.helpers.exceptions import (
     InvalidRegistrationResponse,
     InvalidAuthenticationResponse,
@@ -25,13 +26,17 @@ agent = AgentController()
 webauthn = WebAuthnProvider()
 
 
-@bp.route("/")
-def index():
-    session.clear()
+def _prime_auth_session():
     session["endpoint"] = Config.APP_URL
     session["development"] = Config.TESTING
     session["app_icon"] = Config.APP_ICON
     session["app_logo"] = Config.APP_LOGO
+
+
+@bp.route("/")
+def index():
+    session.clear()
+    _prime_auth_session()
     if Config.ENV == "development":
         # For development, we bypass the webauthn auth flow
         session["client_id"] = str(uuid.uuid4())
@@ -41,7 +46,25 @@ def index():
             wallet.get("wallet_id"),
         )
         return redirect(url_for("main.index"))
-    return render_template("pages/auth.jinja", title=Config.APP_NAME)
+    if not is_mobile():
+        return redirect(url_for("install"))
+    return render_template("pages/landing.jinja", title=Config.APP_NAME)
+
+
+@bp.route("/sign-in")
+def sign_in():
+    _prime_auth_session()
+    if not is_mobile() and Config.ENV != "development":
+        return redirect(url_for("install"))
+    return render_template("pages/auth.jinja", title=Config.APP_NAME, mode="sign-in")
+
+
+@bp.route("/create")
+def create_wallet():
+    _prime_auth_session()
+    if not is_mobile() and Config.ENV != "development":
+        return redirect(url_for("install"))
+    return render_template("pages/auth.jinja", title=Config.APP_NAME, mode="create")
 
 
 @bp.route("/register", methods=["GET", "POST"])
