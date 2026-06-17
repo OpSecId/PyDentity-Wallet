@@ -1,26 +1,15 @@
 {% set cred_count = session.get('credentials', [])|length %}
 {% set conn_count = session.get('connections', [])|length %}
 {% set pending_count = session.get('notifications', [])|length %}
+{% set wallet_id = session.get('wallet_id', '') %}
+{% set wallet_id_short = wallet_id[:8] ~ '…' ~ wallet_id[-6:] if wallet_id|length > 16 else wallet_id %}
 
 <footer class="footer footer-transparent border-0 wallet-dock-footer">
     <div class="container-xl">
-        <div class="wallet-dock mode-scan" id="wallet-dock">
-            <div class="wallet-dock-panel wallet-dock-panel--scan" id="wallet-dock-scan">
-                <button
-                    id="videoBtn"
-                    type="button"
-                    class="btn btn-primary wallet-dock-scan-btn rounded-circle border-0 shadow"
-                    data-bs-toggle="modal"
-                    data-bs-target="#scanner-modal"
-                    aria-label="Scan QR code"
-                >
-                    <i class="ti ti-qrcode"></i>
-                </button>
-            </div>
-
+        <div class="wallet-dock mode-wallet" id="wallet-dock">
             <nav
-                class="wallet-dock-panel wallet-dock-panel--nav"
-                id="wallet-dock-nav"
+                class="wallet-dock-panel wallet-dock-panel--wallet"
+                id="wallet-dock-wallet"
                 role="tablist"
                 aria-label="Wallet sections"
             >
@@ -62,17 +51,117 @@
                 </button>
             </nav>
 
+            <nav
+                class="wallet-dock-panel wallet-dock-panel--account"
+                id="wallet-dock-account"
+                aria-label="Account"
+            >
+                <button
+                    type="button"
+                    class="wallet-dock-nav-btn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#wallet-profile-modal"
+                    aria-label="Profile"
+                >
+                    <i class="ti ti-user"></i>
+                </button>
+                <button
+                    type="button"
+                    class="wallet-dock-nav-btn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#wallet-settings-modal"
+                    aria-label="Settings"
+                >
+                    <i class="ti ti-settings"></i>
+                </button>
+                <a
+                    href="{{ url_for('auth.logout') }}"
+                    class="wallet-dock-nav-btn wallet-dock-nav-btn--danger"
+                    aria-label="Sign out"
+                >
+                    <i class="ti ti-logout"></i>
+                </a>
+            </nav>
+
+            <button
+                id="videoBtn"
+                type="button"
+                class="btn btn-primary wallet-dock-scan-btn rounded-circle border-0 shadow"
+                data-bs-toggle="modal"
+                data-bs-target="#scanner-modal"
+                aria-label="Scan QR code"
+            >
+                <i class="ti ti-qrcode"></i>
+            </button>
+
             <button
                 type="button"
                 class="btn btn-ghost-secondary wallet-dock-toggle rounded-circle border-0"
                 id="wallet-dock-toggle"
-                aria-label="Show section navigation"
+                aria-label="Show account menu"
                 aria-expanded="false"
-                aria-controls="wallet-dock-nav"
+                aria-controls="wallet-dock-account"
             >
-                <i class="ti ti-layout-grid wallet-dock-toggle-icon wallet-dock-toggle-icon--to-nav"></i>
-                <i class="ti ti-qrcode wallet-dock-toggle-icon wallet-dock-toggle-icon--to-scan"></i>
+                <i class="ti ti-user-circle wallet-dock-toggle-icon wallet-dock-toggle-icon--to-account"></i>
+                <i class="ti ti-wallet wallet-dock-toggle-icon wallet-dock-toggle-icon--to-wallet"></i>
             </button>
+        </div>
+    </div>
+
+    <div class="modal modal-blur fade" id="wallet-profile-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="avatar avatar-lg" style="background-image: url({{ session['app_icon'] }})"></span>
+                        <div>
+                            <div class="fw-bold">PyDentity Wallet</div>
+                            <div class="text-secondary small">Secured with passkey</div>
+                        </div>
+                    </div>
+                    {% if wallet_id %}
+                    <div class="mb-2">
+                        <div class="text-secondary small">Wallet ID</div>
+                        <code class="text-break">{{ wallet_id_short }}</code>
+                    </div>
+                    {% endif %}
+                    <div class="row g-2 text-center mt-3">
+                        <div class="col-4">
+                            <div class="fw-bold">{{ cred_count }}</div>
+                            <div class="text-secondary small">Credentials</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold">{{ conn_count }}</div>
+                            <div class="text-secondary small">Connections</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold">{{ pending_count }}</div>
+                            <div class="text-secondary small">Pending</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal modal-blur fade" id="wallet-settings-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 border-0 rounded-0" id="wallet-settings-theme">
+                        <i class="ti ti-moon"></i>
+                        <span>Toggle theme</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -87,14 +176,15 @@
         pointer-events: none;
     }
 
-    .wallet-dock-footer .wallet-dock {
+    .wallet-dock-footer .wallet-dock,
+    .wallet-dock-footer .modal {
         pointer-events: auto;
     }
 
     .wallet-dock {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.45rem;
         padding: 0.45rem;
         border: 1px solid var(--tblr-border-color);
         border-radius: 999px;
@@ -105,32 +195,27 @@
     .wallet-dock-panel {
         flex: 1;
         min-width: 0;
-    }
-
-    .wallet-dock-panel--scan {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 0.15rem 0;
-    }
-
-    .wallet-dock-panel--nav {
-        display: none;
         align-items: stretch;
-        gap: 0.35rem;
+        gap: 0.25rem;
     }
 
-    .wallet-dock.mode-nav .wallet-dock-panel--scan {
+    .wallet-dock-panel--account {
         display: none;
     }
 
-    .wallet-dock.mode-nav .wallet-dock-panel--nav {
+    .wallet-dock.mode-account .wallet-dock-panel--wallet {
+        display: none;
+    }
+
+    .wallet-dock.mode-account .wallet-dock-panel--account {
         display: flex;
     }
 
     .wallet-dock-scan-btn {
-        width: 3.25rem;
-        height: 3.25rem;
+        flex: 0 0 auto;
+        width: 3.1rem;
+        height: 3.1rem;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -138,7 +223,7 @@
     }
 
     .wallet-dock-scan-btn .ti {
-        font-size: 1.45rem;
+        font-size: 1.4rem;
         line-height: 1;
     }
 
@@ -158,16 +243,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 3.25rem;
+        min-height: 3.1rem;
         border: 0;
         border-radius: 999px;
         background: transparent;
         color: var(--tblr-secondary);
+        text-decoration: none;
         transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
     }
 
     .wallet-dock-nav-btn .ti {
-        font-size: 1.35rem;
+        font-size: 1.3rem;
         line-height: 1;
     }
 
@@ -182,6 +268,12 @@
         color: var(--tblr-primary);
     }
 
+    .wallet-dock-nav-btn--danger:hover,
+    .wallet-dock-nav-btn--danger:focus-visible {
+        background: rgba(var(--tblr-danger-rgb), 0.12);
+        color: var(--tblr-danger);
+    }
+
     .wallet-dock-nav-btn:active {
         transform: scale(0.96);
     }
@@ -189,7 +281,7 @@
     .wallet-dock-count {
         position: absolute;
         top: 0.2rem;
-        right: 0.55rem;
+        right: 0.45rem;
         min-width: 1.1rem;
         height: 1.1rem;
         padding: 0 0.25rem;
@@ -202,8 +294,8 @@
 
     .wallet-dock-toggle {
         flex: 0 0 auto;
-        width: 2.75rem;
-        height: 2.75rem;
+        width: 2.65rem;
+        height: 2.65rem;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -215,19 +307,19 @@
         line-height: 1;
     }
 
-    .wallet-dock-toggle-icon--to-scan {
+    .wallet-dock-toggle-icon--to-wallet {
         display: none;
     }
 
-    .wallet-dock.mode-nav .wallet-dock-toggle-icon--to-nav {
+    .wallet-dock.mode-account .wallet-dock-toggle-icon--to-account {
         display: none;
     }
 
-    .wallet-dock.mode-nav .wallet-dock-toggle-icon--to-scan {
+    .wallet-dock.mode-account .wallet-dock-toggle-icon--to-wallet {
         display: block;
     }
 
-    .wallet-dock.mode-nav .wallet-dock-toggle {
+    .wallet-dock.mode-account .wallet-dock-toggle {
         background: rgba(var(--tblr-primary-rgb), 0.12);
         color: var(--tblr-primary);
     }
@@ -239,36 +331,27 @@
         const toggle = document.getElementById('wallet-dock-toggle');
         if (!dock || !toggle) return;
 
-        const storageKey = 'wallet-dock-mode';
-
-        function setDockMode(mode) {
-            const isNav = mode === 'nav';
-            dock.classList.toggle('mode-nav', isNav);
-            dock.classList.toggle('mode-scan', !isNav);
-            toggle.setAttribute('aria-expanded', isNav ? 'true' : 'false');
+        function setDockPanel(panel) {
+            const isAccount = panel === 'account';
+            dock.classList.toggle('mode-account', isAccount);
+            dock.classList.toggle('mode-wallet', !isAccount);
+            toggle.setAttribute('aria-expanded', isAccount ? 'true' : 'false');
             toggle.setAttribute(
                 'aria-label',
-                isNav ? 'Show scan button' : 'Show section navigation'
+                isAccount ? 'Show wallet navigation' : 'Show account menu'
             );
-            try {
-                localStorage.setItem(storageKey, mode);
-            } catch (e) {}
-        }
-
-        const savedMode = (function () {
-            try {
-                return localStorage.getItem(storageKey);
-            } catch (e) {
-                return null;
-            }
-        })();
-
-        if (savedMode === 'nav') {
-            setDockMode('nav');
         }
 
         toggle.addEventListener('click', function () {
-            setDockMode(dock.classList.contains('mode-nav') ? 'scan' : 'nav');
+            setDockPanel(dock.classList.contains('mode-account') ? 'wallet' : 'account');
         });
+
+        const themeBtn = document.getElementById('wallet-settings-theme');
+        const headerTheme = document.getElementById('theme-toggle');
+        if (themeBtn && headerTheme) {
+            themeBtn.addEventListener('click', function () {
+                headerTheme.click();
+            });
+        }
     })();
 </script>
