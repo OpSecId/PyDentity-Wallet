@@ -5,18 +5,14 @@
 {% include('components/modals/connection-details.jinja')%}
 
 <style>
-    /* Mobile-optimized tab styling */
-    .card-tab {
-        -webkit-tap-highlight-color: rgba(32, 107, 196, 0.1);
-        user-select: none;
-        -webkit-user-select: none;
-        touch-action: manipulation;
-        min-height: 60px;
+    .card-tab.active {
+        border: 2px solid var(--tblr-primary);
+        box-shadow: 0 0 0 3px rgba(32, 107, 196, 0.12);
     }
-    
-    .card-tab:active {
-        transform: scale(0.98);
-        transition: transform 0.1s ease-out;
+
+    .card-tab {
+        cursor: pointer;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
     
     .section-container {
@@ -46,12 +42,44 @@
 </style>
 
 <div class="page-body">
-    <div class="container-fluid">
+    <div class="container-xl">
+        {% set is_fresh_wallet = not session.get('credentials') and not session.get('connections') and not session.get('notifications') %}
+
+        {% if is_fresh_wallet %}
+        <div class="card bg-primary-lt border-0 mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-start gap-3">
+                    <span class="avatar bg-primary text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
+                    </span>
+                    <div class="flex-fill">
+                        <h3 class="card-title mb-1">Welcome to your wallet</h3>
+                        <p class="text-secondary mb-3 mb-md-0">
+                            You're all set. Scan a QR code to connect with an issuer or receive your first credential.
+                        </p>
+                    </div>
+                    <div class="d-none d-md-block">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scanner-modal">
+                            Scan QR code
+                        </button>
+                    </div>
+                </div>
+                <div class="d-grid d-md-none mt-3">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scanner-modal">
+                        Scan QR code
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Stats Cards (Interactive Tabs) -->
         <div class="row row-cols-3 g-2 mb-3">
             <div class="col">
-                <div class="card card-tab" onclick="showSection('credentials')" id="credentials-tab" style="cursor: pointer; transition: all 0.2s;">
+                <div class="card card-tab active" onclick="showSection('credentials')" id="credentials-tab" role="button">
                     <div class="card-body text-center py-2">
                         <div class="mb-1">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-green">
@@ -65,7 +93,7 @@
                 </div>
             </div>
             <div class="col">
-                <div class="card card-tab" onclick="showSection('connections')" id="connections-tab" style="cursor: pointer; transition: all 0.2s;">
+                <div class="card card-tab" onclick="showSection('connections')" id="connections-tab" role="button">
                     <div class="card-body text-center py-2">
                         <div class="mb-1">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-blue">
@@ -82,7 +110,7 @@
                 </div>
             </div>
             <div class="col">
-                <div class="card card-tab" onclick="showSection('notifications')" id="notifications-tab" style="cursor: pointer; transition: all 0.2s; position: relative;">
+                <div class="card card-tab" onclick="showSection('notifications')" id="notifications-tab" role="button" style="position: relative;">
                     <div class="card-body text-center py-2">
                         <div class="mb-1" style="position: relative; display: inline-block;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-yellow">
@@ -101,8 +129,9 @@
         <!-- Credentials Section -->
         <div class="row section-container" id="credentials-section">
             <div class="col-12">
+                {% if session.get('credentials', []) or not is_fresh_wallet %}
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3 class="card-title">My Credentials</h3>
+                    <h3 class="card-title mb-0">Credentials</h3>
                     {% if session.get('credentials', []) %}
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
@@ -158,6 +187,7 @@
                     </div>
                     {% endif %}
                 </div>
+                {% endif %}
 
                 {% if session.get('credentials', []) %}
                     {% for credential in session.get('credentials', []) %}
@@ -192,46 +222,25 @@
                                     </div>
                                 </div>
                                 <div class="col-auto">
-                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-credential-{{ loop.index }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-1">
-                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                <circle cx="12" cy="12" r="3"></circle>
-                                            </svg>
+                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modal-credential-{{ loop.index }}">
                                         View
-                                        </button>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            {% endfor %}
-                {% else %}
+                    {% endfor %}
+                {% elif not is_fresh_wallet %}
                 <div class="card">
-                    <div class="card-body text-center py-5">
+                    <div class="card-body text-center py-4">
                         <div class="empty">
-                            <div class="empty-img">
-                                <img src="https://preview.tabler.io/static/illustrations/undraw_quitting_time_dm8t.svg" height="128" alt="">
-                            </div>
                             <p class="empty-title">No credentials yet</p>
                             <p class="empty-subtitle text-secondary">
-                                Scan a QR code or accept a credential offer to get started.
+                                Accept a credential offer or scan a QR code from an issuer.
                             </p>
                             <div class="empty-action">
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scanner-modal">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-2">
-                                        <path d="M4 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
-                                        <path d="M7 17l0 .01"></path>
-                                        <path d="M14 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
-                                        <path d="M7 7l0 .01"></path>
-                                        <path d="M4 14m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
-                                        <path d="M17 7l0 .01"></path>
-                                        <path d="M14 14l3 0"></path>
-                                        <path d="M20 14l0 .01"></path>
-                                        <path d="M14 14l0 3"></path>
-                                        <path d="M14 20l3 0"></path>
-                                        <path d="M17 17l3 0"></path>
-                                        <path d="M20 17l0 3"></path>
-                                    </svg>
-                                    Scan QR Code
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#scanner-modal">
+                                    Scan QR code
                                 </button>
                             </div>
                         </div>
@@ -244,7 +253,7 @@
         <!-- Connections Section (Hidden by default) -->
         <div class="row section-container" id="connections-section" style="display: none;">
             <div class="col-12">
-                <h3 class="card-title mb-3">My Connections</h3>
+                <h3 class="card-title mb-3">Connections</h3>
                 {% if session.get('connections', []) %}
                     {% for connection in session.get('connections', []) %}
                     <div class="card mb-3" style="cursor: pointer; transition: transform 0.1s;" 
@@ -283,11 +292,15 @@
                     {% endfor %}
                 {% else %}
                 <div class="card">
-                    <div class="card-body text-center py-5">
+                    <div class="card-body text-center py-4">
                         <div class="empty">
-                            <p class="empty-title">No connections</p>
+                            <p class="empty-title">{% if is_fresh_wallet %}No connections yet{% else %}No connections{% endif %}</p>
                             <p class="empty-subtitle text-secondary">
+                                {% if is_fresh_wallet %}
+                                Connections show up here after you scan an invitation QR code.
+                                {% else %}
                                 Scan a QR code to connect with an issuer or verifier.
+                                {% endif %}
                             </p>
                         </div>
                     </div>
@@ -299,7 +312,7 @@
         <!-- Notifications Section (Hidden by default) -->
         <div class="row section-container" id="notifications-section" style="display: none;">
             <div class="col-12">
-                <h3 class="card-title mb-3">Pending Notifications</h3>
+                <h3 class="card-title mb-3">Pending</h3>
                 {% if session.get('notifications', []) %}
                 <div class="card">
                     <div class="list-group list-group-flush">
@@ -387,9 +400,7 @@
         
         // Remove active state from all tabs
         document.querySelectorAll('.card-tab').forEach(tab => {
-            tab.style.borderColor = '';
-            tab.style.boxShadow = '';
-            tab.style.transform = '';
+            tab.classList.remove('active');
         });
         
         // Instant show with quick fade for smoothness (mobile-optimized)
@@ -404,10 +415,7 @@
         
         // Add active state to selected tab
         const activeTab = document.getElementById(sectionName + '-tab');
-        activeTab.style.borderColor = '#206bc4';
-        activeTab.style.borderWidth = '2px';
-        activeTab.style.boxShadow = '0 0 0 3px rgba(32, 107, 196, 0.1)';
-        activeTab.style.transform = 'translateY(-2px)';
+        activeTab.classList.add('active');
         
         // Hide notification dot when user views notifications (they've seen them)
         if (sectionName === 'notifications') {
