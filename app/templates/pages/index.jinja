@@ -5,22 +5,41 @@
 {% include('components/modals/connection-details.jinja')%}
 
 <style>
-    .card-tab.active {
-        border: 2px solid var(--tblr-primary);
-        box-shadow: 0 0 0 3px rgba(32, 107, 196, 0.12);
+    .wallet-nav .nav-link {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2rem;
+        padding: 0.65rem 0.35rem;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        border: 0;
+        background: transparent;
     }
 
-    .card-tab {
-        cursor: pointer;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    .wallet-nav .nav-link .ti {
+        font-size: 1.15rem;
+        line-height: 1;
+        opacity: 0.72;
     }
-    
+
+    .wallet-nav .nav-link.active .ti {
+        opacity: 1;
+    }
+
+    .wallet-nav .nav-link .badge {
+        font-size: 0.65rem;
+        min-width: 1.25rem;
+        padding: 0.2em 0.45em;
+    }
+
     .section-container {
         opacity: 1;
         will-change: opacity;
     }
-    
-    /* Optimize for smooth animations on mobile */
+
     @media (prefers-reduced-motion: no-preference) {
         .section-container {
             transition: opacity 0.2s ease-in;
@@ -31,6 +50,9 @@
 <div class="page-body pb-5">
     <div class="container-xl">
         {% set is_fresh_wallet = not session.get('credentials') and not session.get('connections') and not session.get('notifications') %}
+        {% set cred_count = session.get('credentials', [])|length %}
+        {% set conn_count = session.get('connections', [])|length %}
+        {% set pending_count = session.get('notifications', [])|length %}
 
         {% if is_fresh_wallet %}
         <div class="card bg-primary-lt border-0 mb-3">
@@ -53,63 +75,54 @@
         </div>
         {% endif %}
 
-        <!-- Stats Cards (Interactive Tabs) -->
-        <div class="row row-cols-3 g-2 mb-3">
-            <div class="col">
-                <div class="card card-tab active" onclick="showSection('credentials')" id="credentials-tab" role="button">
-                    <div class="card-body text-center py-2">
-                        <div class="mb-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-green">
-                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                                    </svg>
-                        </div>
-                        <div class="h3 m-0">{{ session.get('credentials', [])|length }}</div>
-                        <div class="text-secondary small">Credentials</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card card-tab" onclick="showSection('connections')" id="connections-tab" role="button">
-                    <div class="card-body text-center py-2">
-                        <div class="mb-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-blue">
-                                <circle cx="18" cy="5" r="3"></circle>
-                                <circle cx="6" cy="12" r="3"></circle>
-                                <circle cx="18" cy="19" r="3"></circle>
-                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                            </svg>
-        </div>
-                        <div class="h3 m-0">{{ session.get('connections', [])|length }}</div>
-                        <div class="text-secondary small">Connections</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card card-tab" onclick="showSection('notifications')" id="notifications-tab" role="button" style="position: relative;">
-                    <div class="card-body text-center py-2">
-                        <div class="mb-1" style="position: relative; display: inline-block;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-yellow">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                            </svg>
-                            <span id="notification-dot" style="display: {% if session.get('notifications', []) %}block{% else %}none{% endif %}; position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background-color: #d63939; border-radius: 50%; border: 2px solid white;"></span>
-                    </div>
-                        <div class="h3 m-0" id="notification-count">{{ session.get('notifications', [])|length }}</div>
-                        <div class="text-secondary small">Pending</div>
-                    </div>
-                </div>
+        <div class="card mb-3">
+            <div class="card-body p-2">
+                <nav class="nav nav-segmented nav-3 wallet-nav w-100" role="tablist" aria-label="Wallet sections">
+                    <button
+                        type="button"
+                        class="nav-link active"
+                        id="credentials-tab"
+                        role="tab"
+                        aria-selected="true"
+                        onclick="showSection('credentials')"
+                    >
+                        <i class="ti ti-id"></i>
+                        <span>Credentials</span>
+                        <span class="badge bg-green-lt text-green-fg" id="credentials-count">{{ cred_count }}</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="nav-link"
+                        id="connections-tab"
+                        role="tab"
+                        aria-selected="false"
+                        onclick="showSection('connections')"
+                    >
+                        <i class="ti ti-plug-connected"></i>
+                        <span>Connections</span>
+                        <span class="badge bg-azure-lt text-azure-fg" id="connections-count">{{ conn_count }}</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="nav-link"
+                        id="notifications-tab"
+                        role="tab"
+                        aria-selected="false"
+                        onclick="showSection('notifications')"
+                    >
+                        <i class="ti ti-bell"></i>
+                        <span>Pending</span>
+                        <span class="badge {% if pending_count %}bg-red text-red-fg{% else %}bg-secondary-lt{% endif %}" id="pending-badge">{{ pending_count }}</span>
+                    </button>
+                </nav>
             </div>
         </div>
 
         <!-- Credentials Section -->
         <div class="row section-container" id="credentials-section">
             <div class="col-12">
-                {% if session.get('credentials', []) or not is_fresh_wallet %}
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3 class="card-title mb-0">Credentials</h3>
-                    {% if session.get('credentials', []) %}
+                {% if session.get('credentials', []) %}
+                <div class="d-flex justify-content-end mb-3">
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-1">
@@ -162,7 +175,6 @@
                             </a>
                         </div>
                     </div>
-                    {% endif %}
                 </div>
                 {% endif %}
 
@@ -219,7 +231,6 @@
         <!-- Connections Section (Hidden by default) -->
         <div class="row section-container" id="connections-section" style="display: none;">
             <div class="col-12">
-                <h3 class="card-title mb-3">Connections</h3>
                 {% if session.get('connections', []) %}
                     {% for connection in session.get('connections', []) %}
                     <div class="card mb-3" style="cursor: pointer; transition: transform 0.1s;" 
@@ -278,7 +289,6 @@
         <!-- Notifications Section (Hidden by default) -->
         <div class="row section-container" id="notifications-section" style="display: none;">
             <div class="col-12">
-                <h3 class="card-title mb-3">Pending</h3>
                 {% if session.get('notifications', []) %}
                 <div class="card">
                     <div class="list-group list-group-flush">
@@ -355,6 +365,16 @@
 <script>
     let currentSection = 'credentials';
     
+    function updatePendingBadge(count) {
+        const badge = document.getElementById('pending-badge');
+        if (!badge) return;
+
+        badge.textContent = count;
+        badge.classList.toggle('bg-red', count > 0);
+        badge.classList.toggle('text-red-fg', count > 0);
+        badge.classList.toggle('bg-secondary-lt', count === 0);
+    }
+
     function showSection(sectionName) {
         // Don't re-render if already on this section
         if (currentSection === sectionName) return;
@@ -365,8 +385,9 @@
         });
         
         // Remove active state from all tabs
-        document.querySelectorAll('.card-tab').forEach(tab => {
+        document.querySelectorAll('.wallet-nav .nav-link').forEach(tab => {
             tab.classList.remove('active');
+            tab.setAttribute('aria-selected', 'false');
         });
         
         // Instant show with quick fade for smoothness (mobile-optimized)
@@ -382,14 +403,7 @@
         // Add active state to selected tab
         const activeTab = document.getElementById(sectionName + '-tab');
         activeTab.classList.add('active');
-        
-        // Hide notification dot when user views notifications (they've seen them)
-        if (sectionName === 'notifications') {
-            const notificationDot = document.getElementById('notification-dot');
-            if (notificationDot) {
-                notificationDot.style.display = 'none';
-            }
-        }
+        activeTab.setAttribute('aria-selected', 'true');
         
         currentSection = sectionName;
     }
@@ -567,14 +581,9 @@
                 console.log('🔔 New notification:', data.data.title);
                 showToast(`New offer: ${data.data.title}`, 'success');
                 
-                // Show notification dot and update count
-                const notificationDot = document.getElementById('notification-dot');
-                const notificationCount = document.getElementById('notification-count');
-                if (notificationDot) notificationDot.style.display = 'block';
-                if (notificationCount) {
-                    const currentCount = parseInt(notificationCount.textContent) || 0;
-                    notificationCount.textContent = currentCount + 1;
-                }
+                const pendingBadge = document.getElementById('pending-badge');
+                const currentCount = parseInt(pendingBadge?.textContent, 10) || 0;
+                updatePendingBadge(currentCount + 1);
                 
                 // Reload to show new notification in list
                 setTimeout(() => location.reload(), 2000);
@@ -582,19 +591,9 @@
             else if (data.type === 'notification_removed') {
                 console.log('✅ Notification removed');
                 
-                // Update count and potentially hide dot
-                const notificationDot = document.getElementById('notification-dot');
-                const notificationCount = document.getElementById('notification-count');
-                if (notificationCount) {
-                    const currentCount = parseInt(notificationCount.textContent) || 0;
-                    const newCount = Math.max(0, currentCount - 1);
-                    notificationCount.textContent = newCount;
-                    
-                    // Hide dot if no notifications left
-                    if (newCount === 0 && notificationDot) {
-                        notificationDot.style.display = 'none';
-                    }
-                }
+                const pendingBadge = document.getElementById('pending-badge');
+                const currentCount = parseInt(pendingBadge?.textContent, 10) || 0;
+                updatePendingBadge(Math.max(0, currentCount - 1));
                 
                 // Reload to update UI
                 setTimeout(() => location.reload(), 500);

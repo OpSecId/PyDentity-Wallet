@@ -1,24 +1,49 @@
-<footer class="footer footer-transparent border-top py-2">
-    <div class="container-xl">
-        <button id="videoBtn" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#scanner-modal">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-2">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M4 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
-                <path d="M7 17l0 .01" />
-                <path d="M14 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
-                <path d="M7 7l0 .01" />
-                <path d="M4 14m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
-                <path d="M17 7l0 .01" />
-                <path d="M14 14l3 0" />
-                <path d="M20 14l0 .01" />
-                <path d="M14 14l0 3" />
-                <path d="M14 20l3 0" />
-                <path d="M17 17l3 0" />
-                <path d="M20 17l0 3" />
-            </svg>
-            Scan QR code
+<footer class="footer footer-transparent border-0 py-3 scan-footer">
+    <div class="d-flex justify-content-center">
+        <button
+            id="videoBtn"
+            type="button"
+            class="btn btn-primary scan-fab rounded-circle border-0 shadow-lg"
+            data-bs-toggle="modal"
+            data-bs-target="#scanner-modal"
+            aria-label="Scan QR code"
+        >
+            <i class="ti ti-qrcode"></i>
         </button>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.11.0/dist/index.js"></script>
     <script src="{{url_for('static', filename='qr-scanner.js')}}"></script>
 </footer>
+
+<style>
+    .scan-footer {
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+        background: linear-gradient(to top, var(--tblr-body-bg) 40%, transparent);
+        pointer-events: none;
+    }
+
+    .scan-footer .scan-fab {
+        pointer-events: auto;
+        width: 3.5rem;
+        height: 3.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .scan-footer .scan-fab .ti {
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    .scan-footer .scan-fab:hover,
+    .scan-footer .scan-fab:focus-visible {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(var(--tblr-primary-rgb), 0.45) !important;
+    }
+
+    .scan-footer .scan-fab:active {
+        transform: scale(0.94);
+    }
+</style>

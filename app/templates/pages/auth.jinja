@@ -24,28 +24,52 @@
 
         <div class="card card-md">
             <div class="card-body text-center py-5">
-                <h2 class="h3 mb-3">{{ 'Sign in' if mode == 'sign-in' else 'Create wallet' }}</h2>
-                <div id="auth-loading" class="progress progress-sm" hidden>
+                <h2 class="mb-2">{{ 'Sign in' if mode == 'sign-in' else 'Create wallet' }}</h2>
+                <p class="text-secondary mb-4" id="auth-subtitle">
+                    {% if mode == 'sign-in' %}
+                    Use your passkey to unlock the wallet saved on this device.
+                    {% else %}
+                    Set up a new wallet secured with a passkey on this device.
+                    {% endif %}
+                </p>
+
+                <div id="auth-loading" class="progress progress-sm mb-3" hidden>
                     <div class="progress-bar progress-bar-indeterminate"></div>
                 </div>
-                <p id="auth-status" class="text-secondary mt-3 mb-3"></p>
-                <a id="start-auth" href="#" class="btn btn-primary btn-lg w-100" style="display: none;"></a>
-                <div id="auth-actions" class="d-grid gap-2" style="display: none;"></div>
+                <p id="auth-status" class="text-secondary mb-3" hidden></p>
+
+                <div class="d-grid gap-2" id="auth-primary">
+                    <a id="start-auth" href="#" class="btn btn-primary btn-lg" style="display: none;"></a>
+                    <div id="auth-actions" class="d-grid gap-2" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <a href="{{ url_for('auth.index') }}" class="btn btn-ghost-secondary w-100">
+                    Back to welcome
+                </a>
             </div>
         </div>
 
-        <div class="text-center mt-4">
-            <a href="{{ url_for('auth.index') }}" class="text-secondary">
-                <small>Back to welcome</small>
-            </a>
-        </div>
+        <p class="text-center text-secondary mt-4 mb-0">
+            <small>Secured with passkeys · OpenWallet Foundation Labs</small>
+        </p>
     </div>
 </div>
 
 <script>
     function setAuthStatus(message) {
         const status = document.getElementById('auth-status');
-        if (status) status.textContent = message;
+        const subtitle = document.getElementById('auth-subtitle');
+        if (!status) return;
+        if (message) {
+            status.textContent = message;
+            status.hidden = false;
+            if (subtitle) subtitle.hidden = true;
+        } else {
+            status.hidden = true;
+            if (subtitle) subtitle.hidden = false;
+        }
     }
 
     function clearStoredClient() {
@@ -69,8 +93,10 @@
 
     function showAuthActions(html) {
         const actions = document.getElementById('auth-actions');
+        const startAuth = document.getElementById('start-auth');
         actions.innerHTML = html;
         actions.style.display = 'grid';
+        if (startAuth) startAuth.style.display = 'none';
     }
 
     function beginRegistration() {
@@ -78,6 +104,7 @@
         const endpoint = '{{ url_for("auth.register") }}';
         $.get(endpoint)
             .done(function (data) {
+                setAuthStatus('');
                 setupAuthButton('Create wallet with passkey', async () => {
                     const attResp = await startRegistration({ optionsJSON: data });
                     const verificationResp = await fetch(endpoint, {
@@ -128,14 +155,12 @@
                 if (xhr.status === 404 || response.error === 'wallet_not_found') {
                     setAuthStatus('No wallet found on this server for this device.');
                     showAuthActions(`
-                        <a href="{{ url_for('auth.create_wallet') }}" class="btn btn-primary">Create a new wallet</a>
-                        <a href="{{ url_for('auth.index') }}" class="btn btn-outline-secondary">Back to welcome</a>
+                        <a href="{{ url_for('auth.create_wallet') }}" class="btn btn-primary btn-lg">Create a new wallet</a>
                     `);
                 } else {
                     setAuthStatus('Could not restore your session. Please try again.');
                     showAuthActions(`
-                        <a href="{{ url_for('auth.sign_in') }}" class="btn btn-outline-primary">Try again</a>
-                        <a href="{{ url_for('auth.index') }}" class="btn btn-outline-secondary">Back to welcome</a>
+                        <a href="{{ url_for('auth.sign_in') }}" class="btn btn-outline-primary btn-lg">Try again</a>
                     `);
                 }
             });
@@ -151,8 +176,7 @@
         } else {
             setAuthStatus('No wallet is saved on this device yet.');
             showAuthActions(`
-                <a href="{{ url_for('auth.create_wallet') }}" class="btn btn-primary">Create a wallet</a>
-                <a href="{{ url_for('auth.index') }}" class="btn btn-outline-secondary">Back to welcome</a>
+                <a href="{{ url_for('auth.create_wallet') }}" class="btn btn-primary btn-lg">Create a wallet</a>
             `);
         }
     }
