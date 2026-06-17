@@ -108,10 +108,19 @@ def notification_stream():
 
 @bp.route("/scanner", methods=["POST"])
 def scan_qr_code():
-    current_app.logger.warning("QR Scanner")
-    result = await_(
-        QRScanner(session["wallet_id"]).handle_payload(request.form["payload"])
+    payload = request.form.get("payload", "")
+    current_app.logger.info(
+        f"QR scan request wallet={session.get('wallet_id')} payload_len={len(payload)}"
     )
+    try:
+        result = await_(
+            QRScanner(session["wallet_id"]).handle_payload(payload)
+        )
+    except Exception as err:
+        current_app.logger.error(f"QR scan failed: {err}", exc_info=True)
+        return jsonify({"status": "error", "message": str(err)}), 500
+
+    current_app.logger.info(f"QR scan result type={result.get('type')} status={result.get('result', {}).get('status')}")
     
     # Return success with message about what was processed
     return jsonify({

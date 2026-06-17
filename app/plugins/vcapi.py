@@ -1,11 +1,21 @@
 import requests
 import uuid
+import logging
 from datetime import datetime
+from flask import current_app
 from app.plugins.acapy import AgentController
 from app.plugins.askar import AskarStorage, AskarStorageKeys
 from app.models.notification import Notification
 
 agent = AgentController()
+logger = logging.getLogger(__name__)
+
+
+def _log(message: str, level: int = logging.INFO) -> None:
+    try:
+        current_app.logger.log(level, message)
+    except RuntimeError:
+        logger.log(level, message)
 
 
 class VcApiExchanger:
@@ -13,12 +23,26 @@ class VcApiExchanger:
         self.wallet_id = wallet_id
         self.exchange_url = exchange_url
         self.askar = AskarStorage.for_wallet(wallet_id) if wallet_id else AskarStorage.global_store()
+        _log(f"VcApiExchanger ready wallet={wallet_id} url={exchange_url}")
 
     def initiate_exchange(self):
-        r = requests.post(self.exchange_url, json={})
-        return r.json()
+        _log(f"POST {self.exchange_url} (initiate exchange)")
+        response = requests.post(self.exchange_url, json={}, timeout=30)
+        _log(f"Exchange initiate: HTTP {response.status_code}")
+        try:
+            body = response.json()
+            if isinstance(body, dict):
+                _log(f"Exchange response keys: {list(body.keys())}")
+            response.raise_for_status()
+            return body
+        except ValueError:
+            _log(f"Exchange response not JSON: {response.text[:500]}", logging.ERROR)
+            response.raise_for_status()
+            return {}
 
     async def store_credential(self, vp):
+        cred_count = len(vp.get("verifiableCredential") or [])
+        _log(f"Storing {cred_count} credential(s) from exchange VP")
         wallet = await self.askar.fetch(AskarStorageKeys.WALLETS)
         for vc in vp.get("verifiableCredential"):
             agent.set_token(
@@ -46,8 +70,10 @@ class VcApiExchanger:
                 timestamp=str(datetime.now().isoformat()),
             ).model_dump()
             await self.askar.append("notifications", notification)
+        _log("Credential storage complete")
 
     async def present_credential(self, vpr):
+        _log("Building presentation for VCALM exchange request")
         wallet = await self.askar.fetch("wallet")
 
         # Start building presentation object
@@ -70,6 +96,7 @@ class VcApiExchanger:
         credentials = await self.askar.fetch("credentials")
         for query in vpr.get("query"):
             if query.get("type") == "DIDAuthentication":
+                _log("VPR query: DIDAuthentication")
                 methods = [method["method"] for method in query.get("acceptedMethods")]
 
                 # TODO, only DID key for now, add support for did web
@@ -81,6 +108,7 @@ class VcApiExchanger:
                 proof_options["verificationMethod"] = f"did:key:{multikey}#{multikey}"
 
             if query.get("type") == "QueryByExample":
+                _log("VPR query: QueryByExample")
                 # We add the verifiableCredential property if not present
                 if not presentation.get("verifiableCredential"):
                     presentation["verifiableCredential"] = []
@@ -152,11 +180,15 @@ class VcApiExchanger:
         )
 
         # We send the verifiable presentation to the exchange endpoint
+        _log(f"POST {self.exchange_url} (submit verifiablePresentation)")
         r = requests.post(self.exchange_url, json={"verifiablePresentation": vp})
 
         # If the response fails, we abandon the exchange
         if r.status_code != 200:
+            _log(f"Presentation submit failed: HTTP {r.status_code} {r.text[:500]}", logging.ERROR)
             return
+
+        _log(f"Presentation submit: HTTP {r.status_code}")
 
         # We store an event notification of the presentation exchange
         notification = Notification(
@@ -168,3 +200,4 @@ class VcApiExchanger:
             timestamp=str(datetime.now().isoformat()),
         ).model_dump()
         await self.askar.append("notifications", notification)
+        _log("Presentation exchange notification stored")
