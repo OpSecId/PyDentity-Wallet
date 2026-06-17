@@ -180,40 +180,11 @@ class QRScanner:
 
         protocol_name, exchange_url = selected
         vcapi = VcApiExchanger(self.wallet_id, exchange_url)
-        exchange = vcapi.initiate_exchange()
-
-        result = {"protocol": protocol_name, "exchangeUrl": exchange_url}
-        if exchange.get("verifiablePresentation"):
-            _log("Exchange returned verifiablePresentation — storing credentials")
-            await vcapi.store_credential(exchange.get("verifiablePresentation"))
-            result = {**result, "status": "stored", "exchange": exchange}
-            _log_json("IUV handler finished (stored)", {**result, "exchange": "(omitted)"})
-            return result
-
-        if exchange.get("verifiablePresentationRequest"):
-            _log("Exchange returned verifiablePresentationRequest — building presentation")
-            _log_json("VPR", exchange.get("verifiablePresentationRequest"))
-            follow_up = await vcapi.present_credential(
-                exchange.get("verifiablePresentationRequest")
-            )
-            result = {**result, "status": "presented"}
-            if isinstance(follow_up, dict) and follow_up.get("redirectUrl"):
-                result = {
-                    **result,
-                    "status": "redirect",
-                    "redirectUrl": follow_up.get("redirectUrl"),
-                }
-            _log_json("IUV handler finished (presented)", result)
-            return result
-
-        if exchange.get("redirectUrl"):
-            redirect_url = exchange.get("redirectUrl")
-            _log(f"Exchange returned redirectUrl: {redirect_url}")
-            result = {**result, "status": "redirect", "redirectUrl": redirect_url}
-            _log_json("IUV handler finished (redirect)", result)
-            return result
-
-        _log_json("Exchange response (no recognized next step)", exchange, logging.WARNING)
-        result = {**result, "status": "complete", "exchange": exchange}
-        _log_json("IUV handler finished (complete)", {**result, "exchange": "(omitted)"})
+        loop_result = await vcapi.run_exchange()
+        result = {
+            "protocol": protocol_name,
+            "exchangeUrl": exchange_url,
+            **loop_result,
+        }
+        _log_json("IUV handler finished", result)
         return result

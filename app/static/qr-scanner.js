@@ -82,17 +82,27 @@ function detect(source) {
                         {
                             payload: result[0].rawValue,
                         },
-                        () => {
-                            // Close scanner modal
+                        (response) => {
                             stopScanner();
                             const scannerModal = bootstrap.Modal.getInstance(document.getElementById('scanner-modal'));
                             if (scannerModal) {
                                 scannerModal.hide();
                             }
-                            
-                            // Show connection processing modal with auto-refresh
-                            showConnectionProcessing();
-                        });
+
+                            const scanType = response?.result?.type;
+                            const scanResult = response?.result?.result || {};
+
+                            if (scanType === 'iuv' && ['complete', 'redirect'].includes(scanResult.status)) {
+                                showExchangeComplete(scanResult);
+                            } else if (scanType === 'iuv' && scanResult.status === 'error') {
+                                alert(scanResult.message || 'VCALM exchange failed');
+                            } else if (scanType === 'oob_invitation') {
+                                showConnectionProcessing();
+                            } else {
+                                showConnectionProcessing();
+                            }
+                        },
+                        "json");
                 }
             })
 

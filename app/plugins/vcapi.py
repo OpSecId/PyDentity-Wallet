@@ -6,7 +6,9 @@ from flask import current_app
 from app.plugins.acapy import AgentController
 from app.plugins.askar import AskarStorage, AskarStorageKeys
 from app.models.notification import Notification
-from app.utils import as_list
+from app.utils import as_list, create_notification
+
+MAX_EXCHANGE_STEPS = 10
 
 agent = AgentController()
 logger = logging.getLogger(__name__)
@@ -41,37 +43,103 @@ class VcApiExchanger:
             response.raise_for_status()
             return {}
 
-    async def store_credential(self, vp):
-        cred_count = len(vp.get("verifiableCredential") or [])
-        _log(f"Storing {cred_count} credential(s) from exchange VP")
+    async def store_credential(self, vp) -> int:
+        vcs = as_list(
+            vp.get("verifiableCredential"),
+            label="verifiablePresentation.verifiableCredential",
+        )
+        if not vcs:
+            _log("No verifiableCredential in exchange VP", logging.WARNING)
+            return 0
+
+        _log(f"Storing {len(vcs)} credential(s) from exchange VP")
         wallet = await self.askar.fetch(AskarStorageKeys.WALLETS)
-        for vc in vp.get("verifiableCredential"):
-            agent.set_token(
-                agent.request_token(self.wallet_id, wallet.get("wallet_key")).get(
-                    "token"
-                )
+        if not wallet:
+            _log("Wallet record not found for credential storage", logging.ERROR)
+            return 0
+
+        stored = await self.askar.fetch(AskarStorageKeys.CREDENTIALS) or []
+        agent.set_token(
+            agent.request_token(self.wallet_id, wallet.get("wallet_key")).get("token")
+        )
+
+        for vc in vcs:
+            # TODO, verify credential & remove unverifiable proofs
+            agent.store_credential(vc)
+            stored.append(vc)
+
+            issuer = vc.get("issuer")
+            origin = issuer if isinstance(issuer, str) else (issuer or {}).get("id", "")
+            await create_notification(
+                self.wallet_id,
+                str(uuid.uuid4()),
+                "vcapi_exchange",
+                "Credential Stored",
+                {
+                    "origin": origin,
+                    "message": "Credential stored from VCALM exchange",
+                    "timestamp": datetime.now().isoformat(),
+                },
             )
 
-            # TODO, verify credential & remove unverifiable proofs
-            # We store the VC in the cloud agent
-            agent.store_credential(vc)
+        await self.askar.update(AskarStorageKeys.CREDENTIALS, "data", stored)
+        _log(f"Credential storage complete ({len(vcs)} stored)")
+        return len(vcs)
 
-            # We store the VC in the server store
-            await self.askar.append("credentials", vc)
+    async def run_exchange(self) -> dict:
+        """Run a VCALM/VC API exchange until complete or no further steps."""
+        exchange = self.initiate_exchange()
+        stored_credentials = 0
+        presented = False
 
-            # We create an event notification
-            notification = Notification(
-                id=str(uuid.uuid4()),
-                type="vcapi_exchange",
-                title="Credential Stored",
-                origin=vc["issuer"]
-                if isinstance(vc["issuer"], str)
-                else vc["issuer"]["id"],
-                message="Credential Stored",
-                timestamp=str(datetime.now().isoformat()),
-            ).model_dump()
-            await self.askar.append("notifications", notification)
-        _log("Credential storage complete")
+        for step in range(MAX_EXCHANGE_STEPS):
+            if not isinstance(exchange, dict):
+                break
+
+            if exchange.get("verifiablePresentationRequest"):
+                _log(f"Exchange step {step + 1}: verifiablePresentationRequest")
+                follow_up = await self.present_credential(
+                    exchange["verifiablePresentationRequest"]
+                )
+                presented = True
+                if not isinstance(follow_up, dict):
+                    return {
+                        "status": "error",
+                        "message": "Presentation failed",
+                        "presented": presented,
+                        "storedCredentials": stored_credentials,
+                    }
+                exchange = follow_up
+                continue
+
+            if exchange.get("verifiablePresentation"):
+                _log(f"Exchange step {step + 1}: verifiablePresentation")
+                stored_credentials += await self.store_credential(
+                    exchange["verifiablePresentation"]
+                )
+                if exchange.get("verifiablePresentationRequest"):
+                    continue
+                return {
+                    "status": "complete",
+                    "presented": presented,
+                    "storedCredentials": stored_credentials,
+                }
+
+            if exchange.get("redirectUrl"):
+                return {
+                    "status": "redirect",
+                    "redirectUrl": exchange["redirectUrl"],
+                    "presented": presented,
+                    "storedCredentials": stored_credentials,
+                }
+
+            break
+
+        return {
+            "status": "complete",
+            "presented": presented,
+            "storedCredentials": stored_credentials,
+        }
 
     async def present_credential(self, vpr):
         _log("Building presentation for VCALM exchange request")
@@ -149,6 +217,9 @@ class VcApiExchanger:
                         ),
                         None,
                     )
+                    if vc is None:
+                        _log("No matching credential for QueryByExample", logging.WARNING)
+                        continue
 
                     # We remove the proofs and force into an array
                     proofs = vc.pop("proof")

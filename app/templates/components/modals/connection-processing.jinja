@@ -24,7 +24,48 @@
 let connectionCheckInterval = null;
 let connectionTimeout = null;
 
+function resetConnectionModal() {
+    const spinner = document.getElementById('connection-spinner');
+    const successIcon = document.getElementById('connection-success');
+    spinner.style.display = 'block';
+    spinner.style.opacity = '1';
+    successIcon.style.display = 'none';
+    successIcon.style.opacity = '0';
+    document.getElementById('connection-status-text').textContent = 'Establishing Connection...';
+    document.getElementById('connection-status-detail').textContent = 'Please wait while we connect to the issuer';
+}
+
+function showExchangeComplete(result) {
+    cancelConnectionProcessing();
+    resetConnectionModal();
+
+    const modalEl = document.getElementById('connection-processing-modal');
+    const modal = new bootstrap.Modal(modalEl);
+
+    document.getElementById('connection-spinner').style.display = 'none';
+    const successIcon = document.getElementById('connection-success');
+    successIcon.style.display = 'block';
+    setTimeout(() => { successIcon.style.opacity = '1'; }, 10);
+
+    const stored = result.storedCredentials || 0;
+    document.getElementById('connection-status-text').textContent = 'Exchange Complete';
+    document.getElementById('connection-status-detail').textContent = stored > 0
+        ? `Stored ${stored} credential${stored === 1 ? '' : 's'}`
+        : 'Sign-in complete';
+
+    modal.show();
+
+    if (result.status === 'redirect' && result.redirectUrl) {
+        setTimeout(() => { window.location.href = result.redirectUrl; }, 1500);
+        return;
+    }
+
+    setTimeout(() => { window.location.reload(); }, 1800);
+}
+
 function showConnectionProcessing() {
+    cancelConnectionProcessing();
+    resetConnectionModal();
     const modal = new bootstrap.Modal(document.getElementById('connection-processing-modal'));
     modal.show();
     
