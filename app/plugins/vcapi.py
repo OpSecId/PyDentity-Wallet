@@ -6,6 +6,7 @@ from flask import current_app
 from app.plugins.acapy import AgentController
 from app.plugins.askar import AskarStorage, AskarStorageKeys
 from app.models.notification import Notification
+from app.utils import as_list
 
 agent = AgentController()
 logger = logging.getLogger(__name__)
@@ -74,7 +75,10 @@ class VcApiExchanger:
 
     async def present_credential(self, vpr):
         _log("Building presentation for VCALM exchange request")
-        wallet = await self.askar.fetch("wallet")
+        wallet = await self.askar.fetch(AskarStorageKeys.WALLETS)
+        if not wallet:
+            _log("Wallet record not found for presentation", logging.ERROR)
+            return
 
         # Start building presentation object
         presentation = {
@@ -91,13 +95,19 @@ class VcApiExchanger:
             "proofPurpose": "authentication",
         }
 
-        # TODO, implement tag query for credential selection
-        # Get all credentials from wallet
-        credentials = await self.askar.fetch("credentials")
-        for query in vpr.get("query"):
+        reason = None
+        credentials = await self.askar.fetch(AskarStorageKeys.CREDENTIALS) or []
+        for query in as_list(
+            vpr.get("query"), label="verifiablePresentationRequest.query"
+        ):
             if query.get("type") == "DIDAuthentication":
                 _log("VPR query: DIDAuthentication")
-                methods = [method["method"] for method in query.get("acceptedMethods")]
+                methods = [
+                    method.get("method")
+                    for method in as_list(
+                        query.get("acceptedMethods"), label="acceptedMethods"
+                    )
+                ]
 
                 # TODO, only DID key for now, add support for did web
                 if "key" not in methods:
@@ -113,11 +123,9 @@ class VcApiExchanger:
                 if not presentation.get("verifiableCredential"):
                     presentation["verifiableCredential"] = []
 
-                cred_queries = query.get("credentialQuery")
-                cred_queries = (
-                    cred_queries if isinstance(cred_queries, list) else [cred_queries]
-                )
-                for cred_query in cred_queries:
+                for cred_query in as_list(
+                    query.get("credentialQuery"), label="credentialQuery"
+                ):
                     # Check if the requested credential is required, ignore if optional...
                     if not cred_query.get("required", True):
                         continue

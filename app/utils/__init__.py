@@ -7,6 +7,7 @@ import queue
 import threading
 
 from .device import is_mobile, get_device_type
+from .coercion import as_list
 
 
 # Global event broadcaster for real-time notifications
@@ -289,6 +290,7 @@ def beautify_anoncreds(
 __all__ = [
     'is_mobile',
     'get_device_type',
+    'as_list',
     'notification_broadcaster',
     'create_notification',
     'delete_notification',

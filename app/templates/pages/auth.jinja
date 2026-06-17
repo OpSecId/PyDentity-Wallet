@@ -28,6 +28,7 @@
             <div id="auth-loading" class="progress progress-sm" hidden>
                 <div class="progress-bar progress-bar-indeterminate"></div>
             </div>
+            <p id="auth-status" class="text-muted mt-3 mb-0"></p>
             <a id="start-auth" href="#" class="btn btn-outline-dark btn-lg" style="display: none;"></a>
         </div>
     </div>
@@ -36,40 +37,38 @@
 
 
 <script>
-    // Get clientId from local storage
-    let clientId = localStorage.getItem('clientId');
+    function setAuthStatus(message) {
+        const status = document.getElementById('auth-status');
+        if (status) status.textContent = message;
+    }
 
-    if (clientId) {
-        // If clientId is set, create login request
-        const endpoint = `{{ url_for("auth.login") }}?client_id=${clientId}`
-        $.get(endpoint,
-            function (data, status) {
-                $('#start-auth')[0].addEventListener('click', async () => {
-                    const asseResp = await startAuthentication({ optionsJSON: data });
-                    $('#auth-loading').removeAttr("hidden");
-                    const verificationResp = await fetch(endpoint, {
-                        method: 'POST',
-                        body: JSON.stringify(asseResp),
-                    })
+    function clearStoredClient() {
+        localStorage.removeItem('clientId');
+    }
 
-                    const verificationJSON = await verificationResp.json();
+    function showAuthLoading() {
+        $('#auth-loading').removeAttr('hidden');
+    }
 
-                    if (verificationJSON && verificationJSON.verified) {
-                        window.location.replace("{{url_for('main.index')}}");
-                    } else {
-                        alert("login failed")
-                        console.error(verificationJSON)
-                    }
-                })
-            });
-    } else {
-        // If no clientId is set, we register a login credential and provision a new wallet.
+    function setupAuthButton(label, handler) {
+        const button = document.getElementById('start-auth');
+        button.textContent = label;
+        button.style.display = '';
+        button.onclick = async (event) => {
+            event.preventDefault();
+            showAuthLoading();
+            await handler();
+        };
+        button.click();
+    }
+
+    function beginRegistration() {
+        setAuthStatus('Setting up a new wallet...');
         const endpoint = '{{ url_for("auth.register") }}';
-        $.get(endpoint,
-            function (data, status) {
-                $('#start-auth')[0].addEventListener('click', async () => {
+        $.get(endpoint)
+            .done(function (data) {
+                setupAuthButton('Create wallet', async () => {
                     const attResp = await startRegistration({ optionsJSON: data });
-                    $('#auth-loading').removeAttr("hidden");
                     const verificationResp = await fetch(endpoint, {
                         method: 'POST',
                         body: JSON.stringify(attResp)
@@ -77,18 +76,61 @@
                     const verificationJSON = await verificationResp.json();
 
                     if (verificationJSON && verificationJSON.verified) {
-                        clientId = verificationJSON.client_id;
-                        localStorage.setItem('clientId', clientId);
-                        window.location.replace("{{url_for('main.index')}}");
+                        localStorage.setItem('clientId', verificationJSON.client_id);
+                        window.location.replace("{{ url_for('main.index') }}");
                     } else {
+                        setAuthStatus('Registration failed. Please try again.');
                         alert("Failure");
                     }
                 });
+            })
+            .fail(function () {
+                setAuthStatus('Could not start registration. Please refresh and try again.');
             });
     }
-    setTimeout(function() {
-        document.getElementById('start-auth').click();
-    }, 500);
+
+    function beginLogin(clientId) {
+        setAuthStatus('Checking for your wallet...');
+        const endpoint = `{{ url_for("auth.login") }}?client_id=${clientId}`;
+        $.get(endpoint)
+            .done(function (data) {
+                setAuthStatus('Confirm with your passkey to sign in.');
+                setupAuthButton('Sign in', async () => {
+                    const asseResp = await startAuthentication({ optionsJSON: data });
+                    const verificationResp = await fetch(endpoint, {
+                        method: 'POST',
+                        body: JSON.stringify(asseResp),
+                    });
+                    const verificationJSON = await verificationResp.json();
+
+                    if (verificationJSON && verificationJSON.verified) {
+                        window.location.replace("{{ url_for('main.index') }}");
+                    } else {
+                        setAuthStatus('Sign in failed. Please try again.');
+                        alert("login failed");
+                        console.error(verificationJSON);
+                    }
+                });
+            })
+            .fail(function (xhr) {
+                const response = xhr.responseJSON || {};
+                console.warn('Login unavailable for stored client', clientId, response);
+                clearStoredClient();
+                if (xhr.status === 404 || response.error === 'wallet_not_found') {
+                    setAuthStatus('No wallet found on this server. Creating a new wallet...');
+                } else {
+                    setAuthStatus('Could not restore your session. Creating a new wallet...');
+                }
+                beginRegistration();
+            });
+    }
+
+    const clientId = localStorage.getItem('clientId');
+    if (clientId) {
+        beginLogin(clientId);
+    } else {
+        beginRegistration();
+    }
 </script>
 
 

@@ -95,7 +95,12 @@ def login():
         current_app.logger.warning(f"Prepare login: {client_id}")
         auth_options = await_(webauthn.prepare_login_with_credential(client_id))
         if not auth_options:
-            return {}, 404
+            current_app.logger.warning(f"No wallet credentials found for client: {client_id}")
+            return jsonify({
+                "verified": False,
+                "error": "wallet_not_found",
+                "message": "No wallet found for this device. Please register again.",
+            }), 404
         return jsonify(auth_options), 200
 
     elif request.method == "POST":
