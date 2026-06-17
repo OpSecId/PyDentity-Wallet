@@ -14,25 +14,31 @@
     const AUTH_MODE = {{ mode|tojson }};
 </script>
 
-<div class="container container-tight py-4">
-    <div class="text-center mb-4">
-        <a href="{{ url_for('auth.index') }}" class="navbar-brand navbar-brand-autodark">
-            <img width="220px" src="{{ session['app_logo'] }}">
-        </a>
-    </div>
-    <div class="card-md">
-        <div class="card-body text-center">
-            <h3 class="mb-3">{{ 'Sign in' if mode == 'sign-in' else 'Create wallet' }}</h3>
-            <div id="auth-loading" class="progress progress-sm" hidden>
-                <div class="progress-bar progress-bar-indeterminate"></div>
-            </div>
-            <p id="auth-status" class="text-muted mt-3 mb-3"></p>
-            <a id="start-auth" href="#" class="btn btn-primary btn-lg" style="display: none;"></a>
-            <div id="auth-actions" class="d-grid gap-2" style="display: none;"></div>
+<div class="page page-center">
+    <div class="container container-tight py-4">
+        <div class="text-center mb-4">
+            <a href="{{ url_for('auth.index') }}" class="navbar-brand navbar-brand-autodark">
+                <img src="{{ session['app_logo'] }}" width="200" height="auto" alt="{{ title }}" class="navbar-brand-image">
+            </a>
         </div>
-    </div>
-    <div class="text-center mt-3">
-        <a href="{{ url_for('auth.index') }}" class="text-muted small">Back to welcome</a>
+
+        <div class="card card-md">
+            <div class="card-body text-center py-5">
+                <h2 class="h3 mb-3">{{ 'Sign in' if mode == 'sign-in' else 'Create wallet' }}</h2>
+                <div id="auth-loading" class="progress progress-sm" hidden>
+                    <div class="progress-bar progress-bar-indeterminate"></div>
+                </div>
+                <p id="auth-status" class="text-secondary mt-3 mb-3"></p>
+                <a id="start-auth" href="#" class="btn btn-primary btn-lg w-100" style="display: none;"></a>
+                <div id="auth-actions" class="d-grid gap-2" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('auth.index') }}" class="text-secondary">
+                <small>Back to welcome</small>
+            </a>
+        </div>
     </div>
 </div>
 

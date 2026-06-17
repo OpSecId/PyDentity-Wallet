@@ -6,55 +6,50 @@
     }
 </script>
 
-<div class="container container-tight py-4">
-    <div class="text-center mb-4">
-        <a href="." class="navbar-brand navbar-brand-autodark">
-            <img width="220" src="{{ session['app_logo'] }}" alt="{{ title }}">
-        </a>
-    </div>
+<div class="page page-center">
+    <div class="container container-tight py-4">
+        <div class="text-center mb-4">
+            <a href="{{ url_for('auth.index') }}" class="navbar-brand navbar-brand-autodark">
+                <img src="{{ session['app_logo'] }}" width="200" height="auto" alt="{{ title }}" class="navbar-brand-image">
+            </a>
+        </div>
 
-    <div class="card card-md">
-        <div class="card-body text-center py-4">
-            <h2 class="mb-2">Your digital identity wallet</h2>
-            <p class="text-muted mb-4">
-                Store credentials, connect with issuers, and present verifiable information securely.
-            </p>
+        <div class="card card-md">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <span class="avatar avatar-xl bg-primary-lt text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
+                    </span>
+                </div>
 
-            <div class="d-grid gap-2">
-                <a href="{{ url_for('auth.sign_in') }}" class="btn btn-primary btn-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-2">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                        <polyline points="10 17 15 12 10 7"></polyline>
-                        <line x1="15" y1="12" x2="3" y2="12"></line>
-                    </svg>
-                    Sign in
-                </a>
-                <a href="{{ url_for('auth.create_wallet') }}" class="btn btn-outline-primary btn-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-2">
-                        <path d="M12 5v14"></path>
-                        <path d="M5 12h14"></path>
-                    </svg>
-                    Create wallet
-                </a>
-                <a href="{{ url_for('install') }}" class="btn btn-outline-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-2">
-                        <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
-                        <path d="M7 11l5 5l5 -5"></path>
-                        <path d="M12 4l0 12"></path>
-                    </svg>
-                    Install app
+                <h2 class="mb-2">Your digital identity wallet</h2>
+                <p class="text-secondary mb-4">
+                    Store credentials, connect with issuers, and present verifiable information securely.
+                </p>
+
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('auth.sign_in') }}" class="btn btn-primary btn-lg">
+                        Sign in
+                    </a>
+                    <a href="{{ url_for('auth.create_wallet') }}" class="btn btn-outline-primary btn-lg">
+                        Create wallet
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <a href="{{ url_for('install') }}" class="btn btn-ghost-secondary w-100">
+                    Install app on this device
                 </a>
             </div>
         </div>
-        <div class="card-footer text-center text-muted small">
-            Secured with passkeys · OpenWallet Foundation Labs
-        </div>
+
+        <p class="text-center text-secondary mt-4 mb-0">
+            <small>Secured with passkeys · OpenWallet Foundation Labs</small>
+        </p>
     </div>
 </div>
-
-<style>
-    .page-center {
-        min-height: 100vh;
-    }
-</style>
 {% endblock %}
