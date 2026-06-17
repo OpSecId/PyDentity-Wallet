@@ -1,8 +1,6 @@
 {% set cred_count = session.get('credentials', [])|length %}
 {% set conn_count = session.get('connections', [])|length %}
 {% set pending_count = session.get('notifications', [])|length %}
-{% set wallet_id = session.get('wallet_id', '') %}
-{% set wallet_id_short = wallet_id[:8] ~ '…' ~ wallet_id[-6:] if wallet_id|length > 16 else wallet_id %}
 
 <footer class="footer footer-transparent border-0 wallet-dock-footer">
     <div class="container-xl wallet-dock-stack">
@@ -65,15 +63,6 @@
                 >
                     <i class="ti ti-user"></i>
                 </button>
-                <button
-                    type="button"
-                    class="wallet-dock-nav-btn"
-                    data-bs-toggle="modal"
-                    data-bs-target="#wallet-settings-modal"
-                    aria-label="Settings"
-                >
-                    <i class="ti ti-settings"></i>
-                </button>
                 <a
                     href="{{ url_for('auth.logout') }}"
                     class="wallet-dock-nav-btn wallet-dock-nav-btn--danger"
@@ -110,63 +99,6 @@
         </div>
     </div>
 
-    <div class="modal modal-blur fade" id="wallet-profile-modal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Profile</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <span class="avatar avatar-lg" style="background-image: url({{ session['app_icon'] }})"></span>
-                        <div>
-                            <div class="fw-bold">PyDentity Wallet</div>
-                            <div class="text-secondary small">Secured with passkey</div>
-                        </div>
-                    </div>
-                    {% if wallet_id %}
-                    <div class="mb-2">
-                        <div class="text-secondary small">Wallet ID</div>
-                        <code class="text-break">{{ wallet_id_short }}</code>
-                    </div>
-                    {% endif %}
-                    <div class="row g-2 text-center mt-3">
-                        <div class="col-4">
-                            <div class="fw-bold">{{ cred_count }}</div>
-                            <div class="text-secondary small">Credentials</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="fw-bold">{{ conn_count }}</div>
-                            <div class="text-secondary small">Connections</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="fw-bold">{{ pending_count }}</div>
-                            <div class="text-secondary small">Pending</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal modal-blur fade" id="wallet-settings-modal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Settings</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 border-0 rounded-0" id="wallet-settings-theme">
-                        <i class="ti ti-moon"></i>
-                        <span>Toggle theme</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.11.0/dist/index.js"></script>
     <script src="{{ url_for('static', filename='qr-scanner.js') }}"></script>
 </footer>
@@ -178,8 +110,7 @@
         pointer-events: none;
     }
 
-    .wallet-dock-footer .wallet-dock-stack,
-    .wallet-dock-footer .modal {
+    .wallet-dock-footer .wallet-dock-stack {
         pointer-events: auto;
     }
 
@@ -361,13 +292,5 @@
         toggle.addEventListener('click', function () {
             setDockPanel(dock.classList.contains('mode-account') ? 'wallet' : 'account');
         });
-
-        const themeBtn = document.getElementById('wallet-settings-theme');
-        const headerTheme = document.getElementById('theme-toggle');
-        if (themeBtn && headerTheme) {
-            themeBtn.addEventListener('click', function () {
-                headerTheme.click();
-            });
-        }
     })();
 </script>
