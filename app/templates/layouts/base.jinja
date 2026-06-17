@@ -12,7 +12,9 @@
             <!-- Page body -->
             {% block page %}{% endblock %}
             <div class="sticky-bottom">
+                {% block footer %}
                 {% include('components/footer.jinja')%}
+                {% endblock %}
             </div>
         </div>
     </div>

@@ -1,40 +1,11 @@
 {% extends('layouts/base.jinja') %}
+{% from 'components/macros/wallet-empty.jinja' import wallet_empty %}
 {% block page %}
 {% include('components/modals/credential.jinja')%}
 {% include('components/modals/notification.jinja')%}
 {% include('components/modals/connection-details.jinja')%}
 
 <style>
-    .wallet-nav .nav-link {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.2rem;
-        padding: 0.65rem 0.35rem;
-        font-size: 0.7rem;
-        font-weight: 600;
-        letter-spacing: 0.01em;
-        border: 0;
-        background: transparent;
-    }
-
-    .wallet-nav .nav-link .ti {
-        font-size: 1.15rem;
-        line-height: 1;
-        opacity: 0.72;
-    }
-
-    .wallet-nav .nav-link.active .ti {
-        opacity: 1;
-    }
-
-    .wallet-nav .nav-link .badge {
-        font-size: 0.65rem;
-        min-width: 1.25rem;
-        padding: 0.2em 0.45em;
-    }
-
     .section-container {
         opacity: 1;
         will-change: opacity;
@@ -45,14 +16,27 @@
             transition: opacity 0.2s ease-in;
         }
     }
+
+    .wallet-empty-card .card-body {
+        min-height: 11rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .wallet-empty-card .empty-icon .avatar .ti {
+        font-size: 1.35rem;
+        line-height: 1;
+    }
+
+    .page-body.wallet-home {
+        padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+    }
 </style>
 
-<div class="page-body pb-5">
+<div class="page-body pb-5 wallet-home">
     <div class="container-xl">
         {% set is_fresh_wallet = not session.get('credentials') and not session.get('connections') and not session.get('notifications') %}
-        {% set cred_count = session.get('credentials', [])|length %}
-        {% set conn_count = session.get('connections', [])|length %}
-        {% set pending_count = session.get('notifications', [])|length %}
 
         {% if is_fresh_wallet %}
         <div class="card bg-primary-lt border-0 mb-3">
@@ -74,49 +58,6 @@
             </div>
         </div>
         {% endif %}
-
-        <div class="card mb-3">
-            <div class="card-body p-2">
-                <nav class="nav nav-segmented nav-3 wallet-nav w-100" role="tablist" aria-label="Wallet sections">
-                    <button
-                        type="button"
-                        class="nav-link active"
-                        id="credentials-tab"
-                        role="tab"
-                        aria-selected="true"
-                        onclick="showSection('credentials')"
-                    >
-                        <i class="ti ti-id"></i>
-                        <span>Credentials</span>
-                        <span class="badge bg-green-lt text-green-fg" id="credentials-count">{{ cred_count }}</span>
-                    </button>
-                    <button
-                        type="button"
-                        class="nav-link"
-                        id="connections-tab"
-                        role="tab"
-                        aria-selected="false"
-                        onclick="showSection('connections')"
-                    >
-                        <i class="ti ti-plug-connected"></i>
-                        <span>Connections</span>
-                        <span class="badge bg-azure-lt text-azure-fg" id="connections-count">{{ conn_count }}</span>
-                    </button>
-                    <button
-                        type="button"
-                        class="nav-link"
-                        id="notifications-tab"
-                        role="tab"
-                        aria-selected="false"
-                        onclick="showSection('notifications')"
-                    >
-                        <i class="ti ti-bell"></i>
-                        <span>Pending</span>
-                        <span class="badge {% if pending_count %}bg-red text-red-fg{% else %}bg-secondary-lt{% endif %}" id="pending-badge">{{ pending_count }}</span>
-                    </button>
-                </nav>
-            </div>
-        </div>
 
         <!-- Credentials Section -->
         <div class="row section-container" id="credentials-section">
@@ -213,17 +154,13 @@
                         </div>
                     </div>
                     {% endfor %}
-                {% elif not is_fresh_wallet %}
-                <div class="card">
-                    <div class="card-body text-center py-4">
-                        <div class="empty">
-                            <p class="empty-title">No credentials yet</p>
-                            <p class="empty-subtitle text-secondary">
-                                Accept a credential offer or scan a QR code from an issuer using the button below.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                {% else %}
+                {{ wallet_empty(
+                    'ti-id',
+                    'No credentials yet',
+                    'Accept a credential offer or scan a QR code using the button below.',
+                    'green'
+                ) }}
                 {% endif %}
             </div>
         </div>
@@ -268,20 +205,12 @@
                     </div>
                     {% endfor %}
                 {% else %}
-                <div class="card">
-                    <div class="card-body text-center py-4">
-                        <div class="empty">
-                            <p class="empty-title">{% if is_fresh_wallet %}No connections yet{% else %}No connections{% endif %}</p>
-                            <p class="empty-subtitle text-secondary">
-                                {% if is_fresh_wallet %}
-                                Connections show up here after you scan an invitation QR code.
-                                {% else %}
-                                Scan a QR code to connect with an issuer or verifier.
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                {{ wallet_empty(
+                    'ti-plug-connected',
+                    'No connections yet',
+                    'Scan a QR code to connect with an issuer or verifier.',
+                    'azure'
+                ) }}
                 {% endif %}
             </div>
         </div>
@@ -347,16 +276,12 @@
                     </div>
                 </div>
                 {% else %}
-                <div class="card">
-                    <div class="card-body text-center py-5">
-                        <div class="empty">
-                            <p class="empty-title">No pending notifications</p>
-                            <p class="empty-subtitle text-secondary">
-                                You're all caught up!
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                {{ wallet_empty(
+                    'ti-bell',
+                    'Nothing pending',
+                    "You're all caught up. Offers and requests will appear here when you receive them.",
+                    'yellow'
+                ) }}
                 {% endif %}
             </div>
         </div>
@@ -385,7 +310,7 @@
         });
         
         // Remove active state from all tabs
-        document.querySelectorAll('.wallet-nav .nav-link').forEach(tab => {
+        document.querySelectorAll('.wallet-dock-nav-btn').forEach(tab => {
             tab.classList.remove('active');
             tab.setAttribute('aria-selected', 'false');
         });
@@ -735,4 +660,8 @@
         }
     });
 </script>
+{% endblock %}
+
+{% block footer %}
+{% include('components/wallet-dock.jinja') %}
 {% endblock %}

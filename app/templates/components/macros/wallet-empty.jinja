@@ -1,0 +1,15 @@
+{% macro wallet_empty(icon, title, subtitle, tone='secondary') %}
+<div class="card wallet-empty-card">
+    <div class="card-body">
+        <div class="empty py-4">
+            <div class="empty-icon">
+                <span class="avatar avatar-lg bg-{{ tone }}-lt text-{{ tone }}">
+                    <i class="ti {{ icon }}"></i>
+                </span>
+            </div>
+            <p class="empty-title">{{ title }}</p>
+            <p class="empty-subtitle text-secondary">{{ subtitle }}</p>
+        </div>
+    </div>
+</div>
+{% endmacro %}
