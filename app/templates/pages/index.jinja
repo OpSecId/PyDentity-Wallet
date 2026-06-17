@@ -41,7 +41,7 @@
     }
 </style>
 
-<div class="page-body">
+<div class="page-body pb-5">
     <div class="container-xl">
         {% set is_fresh_wallet = not session.get('credentials') and not session.get('connections') and not session.get('notifications') %}
 
@@ -57,20 +57,10 @@
                     </span>
                     <div class="flex-fill">
                         <h3 class="card-title mb-1">Welcome to your wallet</h3>
-                        <p class="text-secondary mb-3 mb-md-0">
-                            You're all set. Scan a QR code to connect with an issuer or receive your first credential.
+                        <p class="text-secondary mb-0">
+                            You're all set. Use the scan button below to connect with an issuer or receive your first credential.
                         </p>
                     </div>
-                    <div class="d-none d-md-block">
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scanner-modal">
-                            Scan QR code
-                        </button>
-                    </div>
-                </div>
-                <div class="d-grid d-md-none mt-3">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scanner-modal">
-                        Scan QR code
-                    </button>
                 </div>
             </div>
         </div>
@@ -236,13 +226,8 @@
                         <div class="empty">
                             <p class="empty-title">No credentials yet</p>
                             <p class="empty-subtitle text-secondary">
-                                Accept a credential offer or scan a QR code from an issuer.
+                                Accept a credential offer or scan a QR code from an issuer using the button below.
                             </p>
-                            <div class="empty-action">
-                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#scanner-modal">
-                                    Scan QR code
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>

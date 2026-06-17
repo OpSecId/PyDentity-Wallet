@@ -78,6 +78,7 @@ def create_app(config_class=Config):
             demo_url=Config.DEMO_ANONCREDS,
             app_name=Config.APP_NAME,
             project_url=Config.PROJECT_URL,
+            title=Config.APP_NAME,
         )
 
     CORS(app)

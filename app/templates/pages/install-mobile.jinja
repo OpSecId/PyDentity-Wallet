@@ -4,54 +4,75 @@
     <div class="container container-tight py-4">
         <div class="text-center mb-4">
             <a href="{{ url_for('auth.index') }}" class="navbar-brand navbar-brand-autodark">
-                <img src="{{ url_for('static', filename='img/pydentity-logo.png') }}" width="200" height="auto" alt="PyDentity Wallet" class="navbar-brand-image">
+                <img src="{{ session['app_logo'] }}" width="200" height="auto" alt="{{ title }}" class="navbar-brand-image">
             </a>
         </div>
 
         <div class="card card-md">
-            <div class="card-body py-4">
-            <h2 class="text-center mb-3">Install PyDentity Wallet</h2>
-            <p class="text-muted text-center mb-4">
-                Add the wallet to your home screen for quick access and a full-screen app experience.
-            </p>
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <span class="avatar avatar-xl bg-primary-lt text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
+                            <path d="M7 11l5 5l5 -5"></path>
+                            <path d="M12 4l0 12"></path>
+                        </svg>
+                    </span>
+                </div>
 
-            <div id="install-ios" class="mb-4" style="display: none;">
-                <h4 class="mb-3">
-                    <span class="badge bg-secondary-lt me-2">iOS</span>
-                    Safari
-                </h4>
-                <ol class="text-muted mb-0">
-                    <li class="mb-2">Tap the <strong>Share</strong> button at the bottom of Safari.</li>
-                    <li class="mb-2">Scroll down and tap <strong>Add to Home Screen</strong>.</li>
-                    <li>Tap <strong>Add</strong>, then open the wallet from your home screen.</li>
-                </ol>
+                <h2 class="mb-2">Install on this device</h2>
+                <p class="text-secondary mb-4">
+                    Add PyDentity Wallet to your home screen for quick access and a full-screen app experience.
+                </p>
+
+                <div id="install-ios" class="text-start mb-0" style="display: none;">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge bg-secondary-lt">iOS</span>
+                        <span class="text-secondary">Safari</span>
+                    </div>
+                    <ol class="text-secondary mb-0 ps-3">
+                        <li class="mb-2">Tap the <strong>Share</strong> button at the bottom of Safari.</li>
+                        <li class="mb-2">Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+                        <li>Tap <strong>Add</strong>, then open the wallet from your home screen.</li>
+                    </ol>
+                </div>
+
+                <div id="install-android" class="text-start mb-0" style="display: none;">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge bg-success-lt">Android</span>
+                        <span class="text-secondary">Chrome</span>
+                    </div>
+                    <ol class="text-secondary mb-3 ps-3">
+                        <li class="mb-2">Tap the browser menu <strong>(⋮)</strong> in the top right.</li>
+                        <li class="mb-2">Tap <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li>
+                        <li>Confirm to add PyDentity Wallet to your device.</li>
+                    </ol>
+                    <button type="button" class="btn btn-primary w-100" id="android-install-btn" style="display: none;">
+                        Install app
+                    </button>
+                </div>
+
+                <p id="install-generic" class="text-secondary mb-0">
+                    Use your browser menu to add this site to your home screen or install it as an app.
+                </p>
+
+                <div class="d-grid gap-2 mt-4">
+                    <a href="{{ url_for('auth.sign_in') }}" class="btn btn-primary btn-lg">
+                        Continue to sign in
+                    </a>
+                </div>
             </div>
 
-            <div id="install-android" class="mb-4" style="display: none;">
-                <h4 class="mb-3">
-                    <span class="badge bg-success-lt me-2">Android</span>
-                    Chrome
-                </h4>
-                <ol class="text-muted mb-3">
-                    <li class="mb-2">Tap the browser menu <strong>(⋮)</strong> in the top right.</li>
-                    <li class="mb-2">Tap <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li>
-                    <li>Confirm to add PyDentity Wallet to your device.</li>
-                </ol>
-                <button type="button" class="btn btn-primary w-100" id="android-install-btn" style="display: none;">
-                    Install app
-                </button>
-            </div>
-
-            <div id="install-generic" class="text-muted text-center">
-                Use your browser menu to add this site to your home screen or install it as an app.
-            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('auth.index') }}" class="btn btn-ghost-secondary w-100">
+                    Back to welcome
+                </a>
             </div>
         </div>
 
-        <div class="d-grid gap-2 mt-4">
-            <a href="{{ url_for('auth.index') }}" class="btn btn-outline-secondary">Back to welcome</a>
-            <a href="{{ url_for('auth.sign_in') }}" class="btn btn-primary">Continue to sign in</a>
-        </div>
+        <p class="text-center text-secondary mt-4 mb-0">
+            <small>Secured with passkeys · OpenWallet Foundation Labs</small>
+        </p>
     </div>
 </div>
 

@@ -3,152 +3,74 @@
 
 <div class="page page-center">
     <div class="container container-tight py-4">
-        <!-- Logo -->
-        <div class="text-center mb-5">
-            <a href="." class="navbar-brand navbar-brand-autodark">
-                <img width="280px" src="{{ url_for('static', filename='img/pydentity-logo.png') }}" alt="PyDentity Wallet">
+        <div class="text-center mb-4">
+            <a href="{{ url_for('install') }}" class="navbar-brand navbar-brand-autodark">
+                <img src="{{ session['app_logo'] }}" width="200" height="auto" alt="{{ app_name }}" class="navbar-brand-image">
             </a>
         </div>
-        
-        <!-- Main Card -->
+
         <div class="card card-md">
             <div class="card-body text-center py-5">
-                <!-- Mobile Icon -->
                 <div class="mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon text-primary">
-                        <rect x="7" y="4" width="10" height="16" rx="1"></rect>
-                        <path d="M11 5h2"></path>
-                        <path d="M12 17v.01"></path>
-                    </svg>
+                    <span class="avatar avatar-xl bg-primary-lt text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                            <rect x="7" y="4" width="10" height="16" rx="1"></rect>
+                            <path d="M11 5h2"></path>
+                            <path d="M12 17v.01"></path>
+                        </svg>
+                    </span>
                 </div>
-                
-                <h2 class="mb-3">Open on Your Mobile Device</h2>
-                <p class="text-muted mb-4">
-                    PyDentity Wallet is designed for mobile devices.<br>
-                    Scan the QR code below with your phone to get started.
+
+                <h2 class="mb-2">Open on your mobile device</h2>
+                <p class="text-secondary mb-4">
+                    PyDentity Wallet is designed for mobile. Scan the QR code with your phone to get started.
                 </p>
-                
-                <!-- QR Code -->
+
                 <div class="mb-4">
                     <div class="d-inline-block p-3 bg-white rounded shadow-sm">
-                        <img src="{{ qrcode(app_url) }}" alt="Scan to open wallet" class="rounded" style="max-width: 280px; width: 100%;">
+                        <img src="{{ qrcode(app_url) }}" alt="Scan to open wallet" class="rounded" style="max-width: 260px; width: 100%;">
                     </div>
                 </div>
-                
-                <p class="text-muted small mb-4">
-                    Or open <strong>{{ app_url }}</strong> on your mobile browser
+
+                <p class="text-secondary small mb-0">
+                    Or open <strong class="text-body">{{ app_url }}</strong> on your mobile browser
                 </p>
-                
-                <!-- Features -->
-                <div class="row row-cols-1 row-cols-md-3 g-3 mt-4 text-start">
-                    <div class="col">
-                        <div class="d-flex align-items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-green me-2">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                            </svg>
-                            <div>
-                                <strong class="d-block">Secure</strong>
-                                <small class="text-muted">Encrypted storage with WebAuthn</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="d-flex align-items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-blue me-2">
-                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                            </svg>
-                            <div>
-                                <strong class="d-block">Credentials</strong>
-                                <small class="text-muted">Store and manage digital credentials</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="d-flex align-items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-yellow me-2">
-                                <circle cx="18" cy="5" r="3"></circle>
-                                <circle cx="6" cy="12" r="3"></circle>
-                                <circle cx="18" cy="19" r="3"></circle>
-                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                            </svg>
-                            <div>
-                                <strong class="d-block">Connected</strong>
-                                <small class="text-muted">Connect with issuers and verifiers</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
-            
-            <!-- Footer -->
-            <div class="card-footer text-center">
-                <a href="{{ project_url }}" target="_blank" class="btn btn-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-1">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M12 16v-4"></path>
-                        <path d="M12 8h.01"></path>
-                    </svg>
-                    Learn More About PyDentity Wallet
+
+            <div class="card-footer">
+                <a href="{{ project_url }}" target="_blank" rel="noopener" class="btn btn-ghost-secondary w-100">
+                    Learn more about PyDentity Wallet
                 </a>
             </div>
         </div>
-        
-        <!-- Demo Card -->
+
         {% if demo_url %}
-        <div class="card card-md mt-4 bg-primary-lt">
+        <div class="card card-md mt-3 bg-primary-lt border-0">
             <div class="card-body">
-                <div class="row align-items-center g-3">
-                    <div class="col-auto">
-                        <span class="avatar avatar-lg bg-primary text-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                                <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"></path>
-                            </svg>
-                        </span>
-                    </div>
-                    <div class="col">
-                        <h3 class="mb-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-1 text-primary">
-                                <path d="M13 2L3 14h9l-1 8l10-12h-9l1-8z"></path>
-                            </svg>
-                            Try a Live Demo
-                        </h3>
-                        <p class="text-muted mb-2">
-                            Test the wallet with a live AnonCreds demo issuer.<br>
-                            <strong>First</strong>: Scan the QR code above with your phone, then open the demo link below on your <strong>desktop</strong> browser.
+                <div class="d-flex align-items-start gap-3">
+                    <span class="avatar bg-primary text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                            <path d="M13 2L3 14h9l-1 8l10-12h-9l1-8z"></path>
+                        </svg>
+                    </span>
+                    <div class="flex-fill">
+                        <h3 class="card-title mb-1">Try a live demo</h3>
+                        <p class="text-secondary mb-3">
+                            Scan the QR code with your phone first, then open the demo issuer on this desktop browser.
                         </p>
-                        <a href="{{ demo_url }}" target="_blank" class="btn btn-primary btn-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-1">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                <polyline points="15 3 21 3 21 9"></polyline>
-                                <line x1="10" y1="14" x2="21" y2="3"></line>
-                            </svg>
-                            Open Demo Issuer
+                        <a href="{{ demo_url }}" target="_blank" rel="noopener" class="btn btn-primary">
+                            Open demo issuer
                         </a>
-                        <span class="text-muted small ms-2">{{ demo_url }}</span>
                     </div>
                 </div>
             </div>
         </div>
         {% endif %}
-        
-        <!-- Additional Info -->
-        <div class="text-center text-muted mt-4">
-            <small>
-                Part of the <a href="https://openwallet.foundation" target="_blank" class="text-reset">OpenWallet Foundation</a>
-            </small>
-        </div>
+
+        <p class="text-center text-secondary mt-4 mb-0">
+            <small>Secured with passkeys · <a href="https://openwallet.foundation" target="_blank" rel="noopener" class="text-secondary">OpenWallet Foundation</a></small>
+        </p>
     </div>
 </div>
-
-<style>
-    .page-center {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-    }
-</style>
 
 {% endblock %}
