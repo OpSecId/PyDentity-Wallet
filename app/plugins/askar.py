@@ -92,6 +92,13 @@ class AskarStorageKeys:
         EXCHANGES: ExchangeTags,
     }
 
+async def initialize_askar_storage():
+    """Provision the Askar store and ensure the global profile exists."""
+    store = AskarStorage.global_store()
+    await store.provision(recreate=False)
+    await store.create_profile(AskarStorage.GLOBAL_PROFILE)
+
+
 class AskarStorage:
     # Profile name for system-level data
     GLOBAL_PROFILE = "global"

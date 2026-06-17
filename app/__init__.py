@@ -8,8 +8,10 @@ from flask_qrcode import QRcode
 from flask_session import Session
 import logging
 import os
+from asyncio import run as asyncio_run
 
 from config import Config
+from app.plugins import initialize_askar_storage
 from app.handlers.errors import bp as errors_bp
 from app.routes.main import bp as main_bp
 from app.routes.auth import bp as auth_bp
@@ -21,6 +23,8 @@ import json
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    asyncio_run(initialize_askar_storage())
     
     # Configure logging
     log_level = os.getenv('PYDENTITY_LOG_LEVEL', 'INFO').upper()

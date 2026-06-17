@@ -4,19 +4,14 @@ from dotenv import load_dotenv
 from qrcode import QRCode
 
 from app import create_app
-from app.plugins import AskarStorage
-from asyncio import run as _await
 
 app = create_app()
 
 if __name__ == "__main__":
     load_dotenv()
-    
-    # Only initialize in the child process (when WERKZEUG_RUN_MAIN is set)
+
+    # Only start ngrok in the reloader child to avoid duplicate tunnels
     if os.environ.get('WERKZEUG_RUN_MAIN'):
-        # Initialize storage once at startup
-        _await(AskarStorage().provision(recreate=False))
-            
         if os.getenv("NGROK_AUTHTOKEN", None):
             try:
                 listener = ngrok.forward(
