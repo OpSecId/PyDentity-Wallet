@@ -5,7 +5,7 @@
 {% set wallet_id_short = wallet_id[:8] ~ '…' ~ wallet_id[-6:] if wallet_id|length > 16 else wallet_id %}
 
 <footer class="footer footer-transparent border-0 wallet-dock-footer">
-    <div class="container-xl">
+    <div class="container-xl wallet-dock-stack">
         <div class="wallet-dock mode-wallet" id="wallet-dock">
             <nav
                 class="wallet-dock-panel wallet-dock-panel--wallet"
@@ -84,17 +84,6 @@
             </nav>
 
             <button
-                id="videoBtn"
-                type="button"
-                class="btn btn-primary wallet-dock-scan-btn rounded-circle border-0 shadow"
-                data-bs-toggle="modal"
-                data-bs-target="#scanner-modal"
-                aria-label="Scan QR code"
-            >
-                <i class="ti ti-qrcode"></i>
-            </button>
-
-            <button
                 type="button"
                 class="btn btn-ghost-secondary wallet-dock-toggle rounded-circle border-0"
                 id="wallet-dock-toggle"
@@ -104,6 +93,19 @@
             >
                 <i class="ti ti-user-circle wallet-dock-toggle-icon wallet-dock-toggle-icon--to-account"></i>
                 <i class="ti ti-wallet wallet-dock-toggle-icon wallet-dock-toggle-icon--to-wallet"></i>
+            </button>
+        </div>
+
+        <div class="wallet-dock-scan-wrap">
+            <button
+                id="videoBtn"
+                type="button"
+                class="btn btn-primary wallet-dock-scan-btn rounded-circle border-0 shadow-lg"
+                data-bs-toggle="modal"
+                data-bs-target="#scanner-modal"
+                aria-label="Scan QR code"
+            >
+                <i class="ti ti-qrcode"></i>
             </button>
         </div>
     </div>
@@ -172,13 +174,20 @@
 <style>
     .wallet-dock-footer {
         padding: 0.5rem 0 calc(0.65rem + env(safe-area-inset-bottom, 0px));
-        background: linear-gradient(to top, var(--tblr-body-bg) 55%, transparent);
+        background: linear-gradient(to top, var(--tblr-body-bg) 65%, transparent);
         pointer-events: none;
     }
 
-    .wallet-dock-footer .wallet-dock,
+    .wallet-dock-footer .wallet-dock-stack,
     .wallet-dock-footer .modal {
         pointer-events: auto;
+    }
+
+    .wallet-dock-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.65rem;
     }
 
     .wallet-dock {
@@ -190,6 +199,8 @@
         border-radius: 999px;
         background: var(--tblr-bg-surface);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+        width: 100%;
+        max-width: 28rem;
     }
 
     .wallet-dock-panel {
@@ -212,10 +223,15 @@
         display: flex;
     }
 
+    .wallet-dock-scan-wrap {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
     .wallet-dock-scan-btn {
-        flex: 0 0 auto;
-        width: 3.1rem;
-        height: 3.1rem;
+        width: 3.5rem;
+        height: 3.5rem;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -223,7 +239,7 @@
     }
 
     .wallet-dock-scan-btn .ti {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
         line-height: 1;
     }
 
