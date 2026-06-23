@@ -92,7 +92,9 @@ function detect(source) {
                             const scanType = response?.result?.type;
                             const scanResult = response?.result?.result || {};
 
-                            if (scanType === 'iuv' && ['complete', 'redirect'].includes(scanResult.status)) {
+                            if (scanType === 'iuv' && scanResult.status === 'awaiting_consent') {
+                                handleVcalmResult(scanResult);
+                            } else if (scanType === 'iuv' && ['complete', 'redirect'].includes(scanResult.status)) {
                                 showExchangeComplete(scanResult);
                             } else if (scanType === 'iuv' && scanResult.status === 'error') {
                                 alert(scanResult.message || 'VCALM exchange failed');

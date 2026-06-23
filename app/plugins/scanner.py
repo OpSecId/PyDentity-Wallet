@@ -1,11 +1,12 @@
 import requests
 from flask import current_app
-from app.plugins.vcapi import VcApiExchanger
+from app.plugins.vcapi import VcApiExchanger, exchange_to_client_response
 from app.plugins.acapy import AgentController
 from app.plugins.askar import AskarStorage, AskarStorageKeys
 import json
 import base64
 import logging
+import uuid
 
 from urllib.parse import urlparse, unquote, parse_qs
 
@@ -179,8 +180,10 @@ class QRScanner:
             return result
 
         protocol_name, exchange_url = selected
-        vcapi = VcApiExchanger(self.wallet_id, exchange_url)
-        loop_result = await vcapi.run_exchange()
+        exchange_id = str(uuid.uuid4())
+        vcapi = VcApiExchanger(self.wallet_id, exchange_url, protocol=protocol_name)
+        exchange_state = await vcapi.start_exchange(exchange_id)
+        loop_result = exchange_to_client_response(exchange_state)
         result = {
             "protocol": protocol_name,
             "exchangeUrl": exchange_url,

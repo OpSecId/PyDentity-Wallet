@@ -1,0 +1,53 @@
+<!-- VCALM consent modal -->
+<div class="modal modal-blur fade" id="vcalm-consent-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vcalm-consent-title">Confirm</h5>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3" id="vcalm-consent-detail"></p>
+
+                <div id="vcalm-consent-presentation" class="d-none">
+                    <div class="card card-sm mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="avatar avatar-md bg-primary-lt me-3">
+                                    <i class="ti ti-world"></i>
+                                </span>
+                                <div>
+                                    <div class="fw-bold" id="vcalm-consent-domain"></div>
+                                    <div class="text-muted small">Relying party</div>
+                                </div>
+                            </div>
+                            <div class="small text-muted mb-1">Your identity</div>
+                            <div class="font-monospace small text-break" id="vcalm-consent-holder"></div>
+                        </div>
+                    </div>
+                    <div id="vcalm-consent-reasons" class="mb-2"></div>
+                    <div id="vcalm-consent-shared" class="d-none">
+                        <div class="text-muted small mb-2">Credentials to share</div>
+                        <div id="vcalm-consent-shared-list"></div>
+                    </div>
+                </div>
+
+                <div id="vcalm-consent-store" class="d-none">
+                    <div id="vcalm-consent-credentials"></div>
+                </div>
+
+                <div id="vcalm-consent-processing" class="text-center py-4 d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Processing...</span>
+                    </div>
+                    <p class="text-muted mt-3 mb-0">Processing your response...</p>
+                </div>
+            </div>
+            <div class="modal-footer" id="vcalm-consent-actions">
+                <button type="button" class="btn btn-outline-secondary" id="vcalm-consent-decline">Cancel</button>
+                <button type="button" class="btn btn-primary" id="vcalm-consent-confirm">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='vcalm-exchange.js') }}"></script>
